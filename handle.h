@@ -284,7 +284,7 @@ void AverageTreatment(char *filename, int windows_size) {
 
             //边界处理
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8) - depth) {
+                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8)) {
                 show_img[i * width + j] = imginfo.img[i * width + j];
             }
                 //中间区域
@@ -309,11 +309,32 @@ void AverageTreatment(char *filename, int windows_size) {
     //扩充式
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
+            int temp = 0;
+            int x, y;
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8) - depth) {
+                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8)) {
+                for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
+                    for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
+                        x = j + (step * height_pointer);
+                        y = i + width_pointer;
+                        if (y < 0) {
+                            y = 0;
+                        }
+                        if (y > imginfo.infoHeader.biHeight - 1) {
+                            y = imginfo.infoHeader.biHeight - 1;
+                        }
+                        if (x < 0) {
+                            x = 0;
+                        }
 
+                        if (x > (( imginfo.infoHeader.biWidth*imginfo.infoHeader.biBitCount/8) - 1)) {
+                            x = (( imginfo.infoHeader.biWidth*imginfo.infoHeader.biBitCount/8) - 1);
+                        }
+                        temp += imginfo.img[y * width + x];
+                    }
+                }
+                show_img[i * width + j] = temp / (windows_size * windows_size);
             } else {
-                int temp = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
                         temp += imginfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
@@ -339,12 +360,12 @@ void MedianFiltering(char *filename, int windows_size) {
     int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
     auto *show_img = new unsigned char[imginfo.imgSize];
     int step = imginfo.infoHeader.biBitCount / 8;
+    int *temp = (int *) malloc(sizeof(int) * windows_size * windows_size);
     //忽略式
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
-        int *temp = (int *) malloc(sizeof(int) * windows_size * windows_size);
         for (int j = 0; j < width; j++) {
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8) - depth) {
+                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8) ) {
                 show_img[i * width + j] = imginfo.img[i * width + j];
             } else {
                 int k = 0;
@@ -367,97 +388,43 @@ void MedianFiltering(char *filename, int windows_size) {
     }
     //扩充式
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
-        int *temp = (int *) malloc(sizeof(int) * 9);
         for (int j = 0; j < width; j++) {
-            if (i == 0)//下界
-            {
-                if (j == 0)//左下
-                {
-                    temp[0] = imginfo.img[i * width + j];
-                    temp[1] = imginfo.img[i * width + j + step];
-                    temp[2] = imginfo.img[i * width + j + step];
-                    temp[3] = imginfo.img[(i + 1) * width + j];
-                    temp[4] = imginfo.img[(i + 1) * width + j];
-                    temp[5] = imginfo.img[(i + 1) * width + j + step];
-                    temp[6] = imginfo.img[(i + 1) * width + j + step];
-                    temp[7] = imginfo.img[(i + 1) * width + j + step];
-                    temp[8] = imginfo.img[(i + 1) * width + j + step];
-                    show_img[i * width + j] = getMiddle(temp, 9);
-                } else if (j == imginfo.infoHeader.biWidth - 1)//右下
-                {
-                    temp[0] = imginfo.img[i * width + j];
-                    temp[1] = imginfo.img[i * width + j - step];
-                    temp[2] = imginfo.img[i * width + j - step];
-                    temp[3] = imginfo.img[(i + 1) * width + j];
-                    temp[4] = imginfo.img[(i + 1) * width + j];
-                    temp[5] = imginfo.img[(i + 1) * width + j - step];
-                    temp[6] = imginfo.img[(i + 1) * width + j - step];
-                    temp[7] = imginfo.img[(i + 1) * width + j - step];
-                    temp[8] = imginfo.img[(i + 1) * width + j - step];
-                    show_img[i * width + j] = getMiddle(temp, 9);
-                } else {
-                    temp[0] = imginfo.img[i * width + j];
-                    temp[1] = imginfo.img[i * width + j - step];
-                    temp[2] = imginfo.img[i * width + j + step];
-                    temp[3] = imginfo.img[(i + 1) * width + j];
-                    temp[4] = imginfo.img[(i + 1) * width + j];
-                    temp[5] = imginfo.img[(i + 1) * width + j - step];
-                    temp[6] = imginfo.img[(i + 1) * width + j - step];
-                    temp[7] = imginfo.img[(i + 1) * width + j + step];
-                    temp[8] = imginfo.img[(i + 1) * width + j + step];
-                    show_img[i * width + j] = getMiddle(temp, 9);
-                }
+            if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
+                j >= (imginfo.infoHeader.biWidth) * (imginfo.infoHeader.biBitCount / 8)) {
+                int x, y;
+                int k = 0;
+                for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
+                    for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
 
-            } else if (i == imginfo.infoHeader.biHeight - 1)//上界
-            {
-                if (j == 0)//左上
-                {
-                    temp[0] = imginfo.img[i * width + j];
-                    temp[1] = imginfo.img[i * width + j + step];
-                    temp[2] = imginfo.img[i * width + j + step];
-                    temp[3] = imginfo.img[(i - 1) * width + j];
-                    temp[4] = imginfo.img[(i - 1) * width + j];
-                    temp[5] = imginfo.img[(i - 1) * width + j + step];
-                    temp[6] = imginfo.img[(i - 1) * width + j + step];
-                    temp[7] = imginfo.img[(i - 1) * width + j + step];
-                    temp[8] = imginfo.img[(i - 1) * width + j + step];
-                    show_img[i * width + j] = getMiddle(temp, 9);
-                } else if (j == imginfo.infoHeader.biWidth - 1)//右上
-                {
-                    temp[0] = imginfo.img[i * width + j];
-                    temp[1] = imginfo.img[i * width + j - step];
-                    temp[2] = imginfo.img[i * width + j - step];
-                    temp[3] = imginfo.img[(i - 1) * width + j];
-                    temp[4] = imginfo.img[(i - 1) * width + j];
-                    temp[5] = imginfo.img[(i - 1) * width + j - step];
-                    temp[6] = imginfo.img[(i - 1) * width + j - step];
-                    temp[7] = imginfo.img[(i - 1) * width + j - step];
-                    temp[8] = imginfo.img[(i - 1) * width + j - step];
-                    show_img[i * width + j] = getMiddle(temp, 9);
-                } else {
-                    temp[0] = imginfo.img[i * width + j];
-                    temp[1] = imginfo.img[i * width + j - step];
-                    temp[2] = imginfo.img[i * width + j + step];
-                    temp[3] = imginfo.img[(i - 1) * width + j];
-                    temp[4] = imginfo.img[(i - 1) * width + j];
-                    temp[5] = imginfo.img[(i - 1) * width + j - step];
-                    temp[6] = imginfo.img[(i - 1) * width + j - step];
-                    temp[7] = imginfo.img[(i - 1) * width + j + step];
-                    temp[8] = imginfo.img[(i - 1) * width + j + step];
-                    show_img[i * width + j] = getMiddle(temp, 9);
-                }
+                        x = j + (step * height_pointer);
+                        y = i + width_pointer;
+                        if (y < 0) {
+                            y = 0;
+                        }
+                        if (y > imginfo.infoHeader.biHeight - 1) {
+                            y = imginfo.infoHeader.biHeight - 1;
+                        }
+                        if (x < 0) {
+                            x = 0;
+                        }
 
-            } else {//中间区域
-                temp[0] = imginfo.img[i * width + j];
-                temp[1] = imginfo.img[i * width + j - step];
-                temp[2] = imginfo.img[i * width + j + step];
-                temp[3] = imginfo.img[(i + 1) * width + j];
-                temp[4] = imginfo.img[(i + 1) * width + j - step];
-                temp[5] = imginfo.img[(i + 1) * width + j + step];
-                temp[6] = imginfo.img[(i - 1) * width + j];
-                temp[7] = imginfo.img[(i - 1) * width + j - step];
-                temp[8] = imginfo.img[(i - 1) * width + j + step];
-                show_img[i * width + j] = getMiddle(temp, 9);
+                        if (x > ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1)) {
+                            x = ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1);
+                        }
+                        temp[k] = imginfo.img[y * width + x];
+                        k++;
+                    }
+                }
+                show_img[i * width + j] = getMiddle(temp, windows_size * windows_size);
+            } else {
+                int k = 0;
+                for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
+                    for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
+                        temp[k] = imginfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        k++;
+                    }
+                }
+                show_img[i * width + j] = getMiddle(temp, windows_size * windows_size);
             }
         }
     }
