@@ -284,7 +284,7 @@ void AverageTreatment(char *filename, int windows_size) {
 
             //边界处理
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth-1) * (imginfo.infoHeader.biBitCount / 8)) {
+                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
                 show_img[i * width + j] = imginfo.img[i * width + j];
             }
                 //中间区域
@@ -312,7 +312,7 @@ void AverageTreatment(char *filename, int windows_size) {
             int temp = 0;
             int x, y;
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth-1) * (imginfo.infoHeader.biBitCount / 8)) {
+                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
                         x = j + (step * height_pointer);
@@ -327,8 +327,8 @@ void AverageTreatment(char *filename, int windows_size) {
                             x = 0;
                         }
 
-                        if (x > (( imginfo.infoHeader.biWidth*imginfo.infoHeader.biBitCount/8) - 1)) {
-                            x = (( imginfo.infoHeader.biWidth*imginfo.infoHeader.biBitCount/8) - 1);
+                        if (x > ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1)) {
+                            x = ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1);
                         }
                         temp += imginfo.img[y * width + x];
                     }
@@ -365,7 +365,7 @@ void MedianFiltering(char *filename, int windows_size) {
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth-1) * (imginfo.infoHeader.biBitCount / 8) ) {
+                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
                 show_img[i * width + j] = imginfo.img[i * width + j];
             } else {
                 int k = 0;
@@ -390,7 +390,7 @@ void MedianFiltering(char *filename, int windows_size) {
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth-1) * (imginfo.infoHeader.biBitCount / 8)) {
+                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
                 int x, y;
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {

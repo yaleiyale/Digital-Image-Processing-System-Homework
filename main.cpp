@@ -5,7 +5,7 @@
 int main() {
 
     int choice;
-    char filename[500];
+    char filename[50];
     for (;;) {
         std::cin >> choice;
         switch (choice) {
