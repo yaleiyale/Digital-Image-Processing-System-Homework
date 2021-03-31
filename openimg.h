@@ -4,8 +4,6 @@
 
 #include <iostream>
 #include "imgstruct.h"
-
-
 typedef struct tagIMGINFO {
     BITMAPFILEHEADER fileHeader;
     BITMAPINFOHEADER infoHeader;

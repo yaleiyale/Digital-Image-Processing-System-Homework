@@ -5,6 +5,7 @@
 int main() {
 
     int choice;
+    int windows_size;
     char filename[50];
     for (;;) {
         std::cin >> choice;
@@ -35,13 +36,17 @@ int main() {
                 system("explorer ..\\resources\\2.2");
                 break;
             case 6:
+                std::cin>>windows_size;
                 sprintf_s(filename, R"(..\resources\3.1\test%d%d.bmp)", choice / 10, choice % 10);
-                AverageTreatment(filename, 3);
+                AverageTreatment(filename, windows_size);
+                windows_size = 0;
                 system("explorer ..\\resources\\3.1");
                 break;
             case 7:
+                std::cin>>windows_size;
                 sprintf_s(filename, R"(..\resources\3.2\test%d%d.bmp)", choice / 10, choice % 10);
-                MedianFiltering(filename, 3);
+                MedianFiltering(filename, windows_size);
+                windows_size =0;
                 system("explorer ..\\resources\\3.2");
                 break;
             case -1:
