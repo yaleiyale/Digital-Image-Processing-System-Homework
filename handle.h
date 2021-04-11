@@ -458,10 +458,41 @@ void MedianFiltering(char *filename, int windows_size) {
 }
 
 //Ëõ·Å
-void Zoom(char *filename, int delta) {
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *zoom_img = new unsigned char[imginfo.imgSize];
+void Zoom(char *filename, float per) {
+
+    IMGINFO imginfo = openImg((filename));
+    int origin_width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    int zoom_width = (int) (per * imginfo.infoHeader.biWidth);
+    int zoom_height = (int) (per * imginfo.infoHeader.biHeight);
+    int new_width = (zoom_width * imginfo.infoHeader.biBitCount / 8 + 3) / 4 * 4;
+    int new_size = new_width * zoom_height;
+    auto *zoom_img = new unsigned char[new_size];
+    int y, x, new_y, new_x;
+    for (int i = 0; i < zoom_height; i++) {
+        for (int j = 0; j < new_width; j++) {
+            new_y = i;
+            new_x = j;
+            y = (int) (new_y / per);
+            x = (int) (new_x / per);
+            if (y >= 0 && y < imginfo.infoHeader.biHeight && x >= 0 &&
+                x < origin_width)
+                zoom_img[i * new_width + j] = imginfo.img[y * origin_width +
+                                                          x];
+
+        }
+    }
+    imginfo.fileHeader.bfSize = imginfo.fileHeader.bfSize - imginfo.infoHeader.biSizeImage + new_width * zoom_height;
+    imginfo.infoHeader.biHeight = zoom_height;
+    imginfo.infoHeader.biWidth = zoom_width;
+    imginfo.infoHeader.biSizeImage = new_width * zoom_height;
+
+    if (imginfo.infoHeader.biBitCount == 8) {
+        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
+              new_size);
+    } else if (imginfo.infoHeader.biBitCount == 24) {
+        write(imginfo.fileHeader, imginfo.infoHeader, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
+              new_size);
+    }
 }
 
 //Æ½ÒÆ

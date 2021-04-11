@@ -14,8 +14,9 @@ int main() {
     menu();
     int choice;
     int windows_size;
-    int deltax,deltay;
+    int deltaX, deltaY;
     double angle;
+    float per;
     char filename[50];
     for (;;) {
 
@@ -61,17 +62,19 @@ int main() {
                 system("explorer ..\\resources\\3.2");
                 break;
             case 8:
+                std::cout << "输入缩放比" << "\n";
+                std::cin >> per;
                 sprintf_s(filename, R"(..\resources\4.1\test%d%d.bmp)", choice / 10, choice % 10);
-                Zoom(filename, deltax);
+                Zoom(filename, per);
                 system("explorer ..\\resources\\4.1");
                 break;
             case 9:
                 std::cout << "输入水平偏移量" << "\n";
-                std::cin >> deltax;
+                std::cin >> deltaX;
                 std::cout << "输入垂直偏移量" << "\n";
-                std::cin >> deltay;
+                std::cin >> deltaY;
                 sprintf_s(filename, R"(..\resources\4.2\test%d%d.bmp)", choice / 10, choice % 10);
-                Translation(filename, deltax,deltay);
+                Translation(filename, deltaX, deltaY);
                 system("explorer ..\\resources\\4.2");
                 break;
             case 10:

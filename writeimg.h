@@ -4,6 +4,7 @@
 #include "imgstruct.h"
 #include <iostream>
 
+
 void
 write(BITMAPFILEHEADER fileHeader, BITMAPINFOHEADER infoHeader, unsigned char *img, const char *filename, int size) {
     FILE *file;
