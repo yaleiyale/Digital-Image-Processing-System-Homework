@@ -4,7 +4,9 @@
 #include "writeimg.h"
 #include "openimg.h"
 
+
 int getMax(const int *arr, int count) {
+
     int temp = arr[0];
     for (int i = 1; i < count; i++) {
         if (temp < arr[i]) {
@@ -473,8 +475,6 @@ void Translation(char *filename, int deltaX, int deltaY) {
             translation_img[i * width + j] = 255;
         }
     }
-
-
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if (deltaX >= 0) {
@@ -496,8 +496,6 @@ void Translation(char *filename, int deltaX, int deltaY) {
             }
         }
     }
-
-
     if (imginfo.infoHeader.biBitCount == 8) {
         write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, translation_img,
               R"(..\resources\4.2\Translation.bmp)", imginfo.imgSize);
@@ -569,6 +567,7 @@ void Vertical_Mirror(char *filename) {
 void Rotate(char *filename, double angle) {
     IMGINFO imginfo = openImg(filename);
     int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+
     int img_width = ceil(abs(imginfo.infoHeader.biHeight * sin(angle)) + abs(width * cos(angle)));//ÐÂÍ¼Ïñ¿í
     int img_height = ceil(abs(width * sin(angle)) + abs(imginfo.infoHeader.biHeight * cos(angle)));//ÐÂÍ¼Ïñ¸ß
     int new_size = img_width * img_height;

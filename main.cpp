@@ -66,9 +66,9 @@ int main() {
                 system("explorer ..\\resources\\4.1");
                 break;
             case 9:
-                std::cout << "输入水平偏移量";
+                std::cout << "输入水平偏移量" << "\n";
                 std::cin >> deltax;
-                std::cout << "输入垂直偏移量";
+                std::cout << "输入垂直偏移量" << "\n";
                 std::cin >> deltay;
                 sprintf_s(filename, R"(..\resources\4.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Translation(filename, deltax,deltay);
@@ -81,7 +81,7 @@ int main() {
                 system("explorer ..\\resources\\4.3");
                 break;
             case 11:
-                std::cout << "输入旋转角度";
+                std::cout << "输入旋转角度" << "\n";
                 std::cin >> angle;
                 sprintf_s(filename, R"(..\resources\4.4\test%d%d.bmp)", choice / 10, choice % 10);
                 Rotate(filename, angle * PI / 180);
