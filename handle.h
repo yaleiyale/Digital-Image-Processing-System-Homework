@@ -479,7 +479,7 @@ void Translation(char *filename, int deltaX, int deltaY) {
         for (int j = 0; j < width; j++) {
             if (deltaX >= 0) {
                 if (deltaY >= 0) {
-                    if (i <= imginfo.infoHeader.biHeight - deltaY && j <= width - deltaX * time)
+                    if (i < imginfo.infoHeader.biHeight - deltaY && j <= width - deltaX * time)
                         translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
                 } else if (deltaY < 0) {
                     if (i >= -deltaY && j <= width - deltaX * time)
@@ -487,7 +487,7 @@ void Translation(char *filename, int deltaX, int deltaY) {
                 }
             } else if (deltaX < 0) {
                 if (deltaY >= 0) {
-                    if (i <= imginfo.infoHeader.biHeight - deltaY && j >= -deltaX * time)
+                    if (i < imginfo.infoHeader.biHeight - deltaY && j >= -deltaX * time)
                         translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
                 } else if (deltaY < 0) {
                     if (i >= -deltaY && j >= -deltaX * time)
