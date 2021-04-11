@@ -2,7 +2,7 @@
 
 #include "handle.h"
 
-const double PI = acos(-1.0);
+#define  PI  acos(-1.0)
 
 void menu() {
     std::cout << "数字图像处理" << "\n" << "输入数字选择功能" << "\n" << "1:24位分色" << "\n" << "2:8位灰度化" << "\n" << "3:8位反色" << "\n"
@@ -11,64 +11,66 @@ void menu() {
 }
 
 int main() {
-    menu();
+
     int choice;
     int windows_size;
     int deltaX, deltaY;
+    float scaleX, scaleY;
     double angle;
-    float per;
     char filename[50];
     for (;;) {
-
+        menu();
         std::cin >> choice;
         switch (choice) {
-            case 1:
+            case 1://分色
                 sprintf_s(filename, R"(..\resources\1.1\test%d%d.bmp)", choice / 10, choice % 10);
                 ColorSeparation(filename);
                 system("explorer ..\\resources\\1.1");
                 break;
-            case 2:
+            case 2://灰度化
                 sprintf_s(filename, R"(..\resources\1.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Grayscale(filename);
                 system("explorer ..\\resources\\1.2");
                 break;
-            case 3:
+            case 3://反色
                 sprintf_s(filename, R"(..\resources\1.3\test%d%d.bmp)", choice / 10, choice % 10);
                 Invert(filename);
                 system("explorer ..\\resources\\1.3");
                 break;
-            case 4:
+            case 4://直方图
                 sprintf_s(filename, R"(..\resources\2.1\test%d%d.bmp)", choice / 10, choice % 10);
                 Histogram(filename);
                 system("explorer ..\\resources\\2.1");
                 break;
-            case 5:
+            case 5://均衡化
                 sprintf_s(filename, R"(..\resources\2.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Equalization(filename);
                 system("explorer ..\\resources\\2.2");
                 break;
-            case 6:
+            case 6://平均降噪
                 std::cout << "输入窗口大小（奇数）" << "\n";
                 std::cin >> windows_size;
                 sprintf_s(filename, R"(..\resources\3.1\test%d%d.bmp)", choice / 10, choice % 10);
                 AverageTreatment(filename, windows_size);
                 system("explorer ..\\resources\\3.1");
                 break;
-            case 7:
+            case 7://中值降噪
                 std::cout << "输入窗口大小（奇数）" << "\n";
                 std::cin >> windows_size;
                 sprintf_s(filename, R"(..\resources\3.2\test%d%d.bmp)", choice / 10, choice % 10);
                 MedianFiltering(filename, windows_size);
                 system("explorer ..\\resources\\3.2");
                 break;
-            case 8:
-                std::cout << "输入缩放比" << "\n";
-                std::cin >> per;
+            case 8://缩放
+                std::cout << "输入横向缩放比" << "\n";
+                std::cin >> scaleX;
+                std::cout << "输入纵向缩放比" << "\n";
+                std::cin >> scaleY;
                 sprintf_s(filename, R"(..\resources\4.1\test%d%d.bmp)", choice / 10, choice % 10);
-                Zoom(filename, per);
+                Scale(filename, scaleX, scaleY);
                 system("explorer ..\\resources\\4.1");
                 break;
-            case 9:
+            case 9://平移
                 std::cout << "输入水平偏移量" << "\n";
                 std::cin >> deltaX;
                 std::cout << "输入垂直偏移量" << "\n";
@@ -77,13 +79,13 @@ int main() {
                 Translation(filename, deltaX, deltaY);
                 system("explorer ..\\resources\\4.2");
                 break;
-            case 10:
+            case 10://镜像
                 sprintf_s(filename, R"(..\resources\4.3\test%d%d.bmp)", choice / 10, choice % 10);
                 Horizontal_Mirror(filename);
                 Vertical_Mirror(filename);
                 system("explorer ..\\resources\\4.3");
                 break;
-            case 11:
+            case 11://旋转
                 std::cout << "输入旋转角度" << "\n";
                 std::cin >> angle;
                 sprintf_s(filename, R"(..\resources\4.4\test%d%d.bmp)", choice / 10, choice % 10);

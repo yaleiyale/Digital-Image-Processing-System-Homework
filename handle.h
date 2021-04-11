@@ -54,13 +54,13 @@ int getMiddle(const int *arr, int count) {
 
 //24位分色
 void ColorSeparation(char *filename) {
-    IMGINFO imginfo = openImg(filename);
-    int bmpHeight = imginfo.infoHeader.biHeight;
-    int bmpWidth = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    IMGINFO imgInfo = openImg(filename);
+    int bmpHeight = imgInfo.infoHeader.biHeight;
+    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
     //分色图像区
-    auto *img_r = new unsigned char[imginfo.imgSize];
-    auto *img_g = new unsigned char[imginfo.imgSize];
-    auto *img_b = new unsigned char[imginfo.imgSize];
+    auto *img_r = new unsigned char[imgInfo.imgSize];
+    auto *img_g = new unsigned char[imgInfo.imgSize];
+    auto *img_b = new unsigned char[imgInfo.imgSize];
     //分离
     for (int i = 0; i < bmpHeight; i++) {
         for (int j = 0; j < bmpWidth; j++) {
@@ -70,26 +70,29 @@ void ColorSeparation(char *filename) {
                 case 0:
                     img_r[i * bmpWidth + j] = 0;
                     img_g[i * bmpWidth + j] = 0;
-                    img_b[i * bmpWidth + j] = imginfo.img[i * bmpWidth + j];
+                    img_b[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j];
                     break;
                     //G区
                 case 1:
                     img_r[i * bmpWidth + j] = 0;
-                    img_g[i * bmpWidth + j] = imginfo.img[i * bmpWidth + j];
+                    img_g[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j];
                     img_b[i * bmpWidth + j] = 0;
                     break;
                     //R区
                 case 2:
-                    img_r[i * bmpWidth + j] = imginfo.img[i * bmpWidth + j];
+                    img_r[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j];
                     img_g[i * bmpWidth + j] = 0;
                     img_b[i * bmpWidth + j] = 0;
                     break;
             }
         }
     }
-    write(imginfo.fileHeader, imginfo.infoHeader, img_r, R"(..\resources\1.1\r.bmp)", imginfo.imgSize);
-    write(imginfo.fileHeader, imginfo.infoHeader, img_g, R"(..\resources\1.1\g.bmp)", imginfo.imgSize);
-    write(imginfo.fileHeader, imginfo.infoHeader, img_b, R"(..\resources\1.1\b.bmp)", imginfo.imgSize);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, img_r, R"(..\resources\1.1\r.bmp)", imgInfo.imgSize);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, img_g, R"(..\resources\1.1\g.bmp)", imgInfo.imgSize);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, img_b, R"(..\resources\1.1\b.bmp)", imgInfo.imgSize);
+    delete[](img_r);
+    delete[](img_g);
+    delete[](img_b);
 }
 
 //24位灰度化
@@ -109,7 +112,7 @@ void Grayscale(char *filename) {
             if (j % 3 == 0) {
                 double temp = imgInfo.img[i * bmpWidth + j - 3] * 0.114 + imgInfo.img[i * bmpWidth + j - 2] * 0.587 +
                               imgInfo.img[i * bmpWidth + j - 1] * 0.299;
-                img_grey[i * new_width + j / 3 - 1] = temp;
+                img_grey[i * new_width + j / 3 - 1] = (unsigned char) temp;
             }
         }
     }
@@ -130,28 +133,28 @@ void Grayscale(char *filename) {
 
 //8位反色
 void Invert(char *filename) {
-    IMGINFO imginfo = openImg(filename);
-    int bmpHeight = imginfo.infoHeader.biHeight;
-    int bmpWidth = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *img_invert = new unsigned char[imginfo.imgSize];
+    IMGINFO imgInfo = openImg(filename);
+    int bmpHeight = imgInfo.infoHeader.biHeight;
+    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *img_invert = new unsigned char[imgInfo.imgSize];
     for (int i = 0; i < bmpHeight; i++) {
         for (int j = 0; j < bmpWidth; j++) {
-            img_invert[i * bmpWidth + j] = 255 - imginfo.img[i * bmpWidth + j];
+            img_invert[i * bmpWidth + j] = 255 - imgInfo.img[i * bmpWidth + j];
         }
     }
-    write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, img_invert, R"(..\resources\1.3\invert.bmp)",
-          imginfo.imgSize);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, img_invert, R"(..\resources\1.3\invert.bmp)",
+          imgInfo.imgSize);
 }
 
 //直方图
 void Histogram(char *filename) {
     int count[256] = {0};
-    IMGINFO imginfo = openImg(filename);
-    int bmpHeight = imginfo.infoHeader.biHeight;
-    int bmpWidth = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    IMGINFO imgInfo = openImg(filename);
+    int bmpHeight = imgInfo.infoHeader.biHeight;
+    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
     for (int i = 0; i < bmpHeight; i++) {
         for (int j = 0; j < bmpWidth; j++) {
-            int now = imginfo.img[i * bmpWidth + j];
+            int now = imgInfo.img[i * bmpWidth + j];
             count[now]++;
         }
     }
@@ -208,15 +211,15 @@ void Histogram(char *filename) {
 
 //均衡化
 void Equalization(char *filename) {
-    IMGINFO imginfo = openImg(filename);
-    int bmpWidth = imginfo.infoHeader.biWidth;
-    int bmpHeight = imginfo.infoHeader.biHeight;
+    IMGINFO imgInfo = openImg(filename);
+    int bmpWidth = imgInfo.infoHeader.biWidth;
+    int bmpHeight = imgInfo.infoHeader.biHeight;
     //当前直方图解析
     int count[256] = {0};
     for (int i = 0; i < bmpWidth * 3; i += 3) {
         for (int j = 0; j < bmpHeight; j++) {
-            if ((imginfo.img[j * bmpWidth * 3 + i] == 0) & (imginfo.img[j * bmpWidth * 3 + i + 1] == 0) &&
-                (imginfo.img[j * bmpWidth * 3 + i + 2] == 0)) {
+            if ((imgInfo.img[j * bmpWidth * 3 + i] == 0) & (imgInfo.img[j * bmpWidth * 3 + i + 1] == 0) &&
+                (imgInfo.img[j * bmpWidth * 3 + i + 2] == 0)) {
                 count[i / 3]++;//每个灰度的统计量
             }
         }
@@ -236,7 +239,7 @@ void Equalization(char *filename) {
     }
     int temp[256] = {0};
     for (int k = 0; k < 256; k++) {
-        temp[k] = (int) (255 * pi[k] + 0.5);
+        temp[k] = (int) (255 * pi[k] + 1 - 0.5);
     }
     int new_count[256] = {0};//新直方图计数
     for (int k = 0; k < 256; k++) {
@@ -294,45 +297,45 @@ void Equalization(char *filename) {
 //平均处理
 void AverageTreatment(char *filename, int windows_size) {
     int depth = windows_size / 2;
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *show_img = new unsigned char[imginfo.imgSize];
-    int step = imginfo.infoHeader.biBitCount / 8;
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *show_img = new unsigned char[imgInfo.imgSize];
+    int step = imgInfo.infoHeader.biBitCount / 8;
     //忽略式
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
 
             //边界处理
-            if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
-                show_img[i * width + j] = imginfo.img[i * width + j];
+            if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
+                j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
+                show_img[i * width + j] = imgInfo.img[i * width + j];
             }
                 //中间区域
             else {
                 int temp = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp += imginfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp += imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
                     }
                 }
                 show_img[i * width + j] = temp / (windows_size * windows_size);
             }
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, show_img,
-              R"(..\resources\3.1\AverageTreatment1.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment1.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
+              R"(..\resources\3.1\AverageTreatment1.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment1.bmp)",
+              imgInfo.imgSize);
     }
     //扩充式
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             int temp = 0;
             int x, y;
-            if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
+            if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
+                j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
                         x = j + (step * height_pointer);
@@ -340,58 +343,58 @@ void AverageTreatment(char *filename, int windows_size) {
                         if (y < 0) {
                             y = 0;
                         }
-                        if (y > imginfo.infoHeader.biHeight - 1) {
-                            y = imginfo.infoHeader.biHeight - 1;
+                        if (y > imgInfo.infoHeader.biHeight - 1) {
+                            y = imgInfo.infoHeader.biHeight - 1;
                         }
                         if (x < 0) {
                             x = 0;
                         }
 
-                        if (x > ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1)) {
-                            x = ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1);
+                        if (x > ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1)) {
+                            x = ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1);
                         }
-                        temp += imginfo.img[y * width + x];
+                        temp += imgInfo.img[y * width + x];
                     }
                 }
                 show_img[i * width + j] = temp / (windows_size * windows_size);
             } else {
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp += imginfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp += imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
                     }
                 }
                 show_img[i * width + j] = temp / (windows_size * windows_size);
             }
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, show_img,
-              R"(..\resources\3.1\AverageTreatment2.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment2.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
+              R"(..\resources\3.1\AverageTreatment2.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment2.bmp)",
+              imgInfo.imgSize);
     }
 }
 
 //中值滤波
 void MedianFiltering(char *filename, int windows_size) {
     int depth = windows_size / 2;
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *show_img = new unsigned char[imginfo.imgSize];
-    int step = imginfo.infoHeader.biBitCount / 8;
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *show_img = new unsigned char[imgInfo.imgSize];
+    int step = imgInfo.infoHeader.biBitCount / 8;
     int *temp = (int *) malloc(sizeof(int) * windows_size * windows_size);
     //忽略式
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
-            if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
-                show_img[i * width + j] = imginfo.img[i * width + j];
+            if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
+                j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
+                show_img[i * width + j] = imgInfo.img[i * width + j];
             } else {
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp[k] = imginfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp[k] = imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
                         k++;
                     }
                 }
@@ -399,18 +402,18 @@ void MedianFiltering(char *filename, int windows_size) {
             }
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, show_img,
-              R"(..\resources\3.2\MedianFiltering1.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering1.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
+              R"(..\resources\3.2\MedianFiltering1.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering1.bmp)",
+              imgInfo.imgSize);
     }
     //扩充式
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
-            if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
+            if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
+                j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
                 int x, y;
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
@@ -421,17 +424,17 @@ void MedianFiltering(char *filename, int windows_size) {
                         if (y < 0) {
                             y = 0;
                         }
-                        if (y > imginfo.infoHeader.biHeight - 1) {
-                            y = imginfo.infoHeader.biHeight - 1;
+                        if (y > imgInfo.infoHeader.biHeight - 1) {
+                            y = imgInfo.infoHeader.biHeight - 1;
                         }
                         if (x < 0) {
                             x = 0;
                         }
 
-                        if (x > ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1)) {
-                            x = ((imginfo.infoHeader.biWidth * imginfo.infoHeader.biBitCount / 8) - 1);
+                        if (x > ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1)) {
+                            x = ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1);
                         }
-                        temp[k] = imginfo.img[y * width + x];
+                        temp[k] = imgInfo.img[y * width + x];
                         k++;
                     }
                 }
@@ -440,7 +443,7 @@ void MedianFiltering(char *filename, int windows_size) {
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp[k] = imginfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp[k] = imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
                         k++;
                     }
                 }
@@ -448,159 +451,159 @@ void MedianFiltering(char *filename, int windows_size) {
             }
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, show_img,
-              R"(..\resources\3.2\MedianFiltering2.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering2.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
+              R"(..\resources\3.2\MedianFiltering2.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering2.bmp)",
+              imgInfo.imgSize);
     }
 }
 
 //缩放
-void Zoom(char *filename, float per) {
+void Scale(char *filename, float scaleX, float scaleY) {
 
-    IMGINFO imginfo = openImg((filename));
-    int origin_width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    int zoom_width = (int) (per * imginfo.infoHeader.biWidth);
-    int zoom_height = (int) (per * imginfo.infoHeader.biHeight);
-    int new_width = (zoom_width * imginfo.infoHeader.biBitCount / 8 + 3) / 4 * 4;
+    IMGINFO imgInfo = openImg((filename));
+    int origin_width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    int zoom_width = (int) (scaleX * (float) imgInfo.infoHeader.biWidth);
+    int zoom_height = (int) (scaleY * (float) imgInfo.infoHeader.biHeight);
+    int new_width = (zoom_width * imgInfo.infoHeader.biBitCount / 8 + 3) / 4 * 4;
     int new_size = new_width * zoom_height;
     auto *zoom_img = new unsigned char[new_size];
-    int y, x, new_y, new_x;
+    int x, y, new_x, new_y;
     for (int i = 0; i < zoom_height; i++) {
         for (int j = 0; j < new_width; j++) {
             new_y = i;
             new_x = j;
-            y = (int) (new_y / per);
-            x = (int) (new_x / per);
-            if (y >= 0 && y < imginfo.infoHeader.biHeight && x >= 0 &&
+            y = (int) ((float) new_y / scaleY);
+            x = (int) ((float) new_x / scaleX);
+            if (y >= 0 && y < imgInfo.infoHeader.biHeight && x >= 0 &&
                 x < origin_width)
-                zoom_img[i * new_width + j] = imginfo.img[y * origin_width +
+                zoom_img[i * new_width + j] = imgInfo.img[y * origin_width +
                                                           x];
 
         }
     }
-    imginfo.fileHeader.bfSize = imginfo.fileHeader.bfSize - imginfo.infoHeader.biSizeImage + new_width * zoom_height;
-    imginfo.infoHeader.biHeight = zoom_height;
-    imginfo.infoHeader.biWidth = zoom_width;
-    imginfo.infoHeader.biSizeImage = new_width * zoom_height;
+    imgInfo.fileHeader.bfSize = imgInfo.fileHeader.bfSize - imgInfo.infoHeader.biSizeImage + new_width * zoom_height;
+    imgInfo.infoHeader.biHeight = zoom_height;
+    imgInfo.infoHeader.biWidth = zoom_width;
+    imgInfo.infoHeader.biSizeImage = new_width * zoom_height;
 
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
               new_size);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
               new_size);
     }
 }
 
 //平移
 void Translation(char *filename, int deltaX, int deltaY) {
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *translation_img = new unsigned char[imginfo.imgSize];
-    int time = imginfo.infoHeader.biBitCount / 8;
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *translation_img = new unsigned char[imgInfo.imgSize];
+    int time = imgInfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             translation_img[i * width + j] = 255;
         }
     }
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if (deltaX >= 0) {
                 if (deltaY >= 0) {
-                    if (i < imginfo.infoHeader.biHeight - deltaY && j <= width - deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                    if (i < imgInfo.infoHeader.biHeight - deltaY && j <= width - deltaX * time)
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
                 } else if (deltaY < 0) {
                     if (i >= -deltaY && j <= width - deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
                 }
             } else if (deltaX < 0) {
                 if (deltaY >= 0) {
-                    if (i < imginfo.infoHeader.biHeight - deltaY && j >= -deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                    if (i < imgInfo.infoHeader.biHeight - deltaY && j >= -deltaX * time)
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
                 } else if (deltaY < 0) {
                     if (i >= -deltaY && j >= -deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
                 }
             }
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, translation_img,
-              R"(..\resources\4.2\Translation.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, translation_img, R"(..\resources\4.2\Translation.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, translation_img,
+              R"(..\resources\4.2\Translation.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, translation_img, R"(..\resources\4.2\Translation.bmp)",
+              imgInfo.imgSize);
     }
 }
 
 //水平镜像
 void Horizontal_Mirror(char *filename) {
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *mirror_img = new unsigned char[imginfo.imgSize];
-    int time = imginfo.infoHeader.biBitCount / 8;
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *mirror_img = new unsigned char[imgInfo.imgSize];
+    int time = imgInfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             mirror_img[i * width + j] = 0;
         }
     }
     if (time == 3) {
-        for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
-            for (int j = 0; j < imginfo.infoHeader.biWidth * time; j++) {
+        for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+            for (int j = 0; j < imgInfo.infoHeader.biWidth * time; j++) {
                 if (j % 3 == 1)
-                    mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j - 1];
+                    mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j - 1];
                 else if (j % 3 == 0)
-                    mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j - 3];
+                    mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j - 3];
                 else
-                    mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j + 1];
+                    mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j + 1];
             }
         }
     } else if (time == 1) {
-        for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
-            for (int j = 0; j < imginfo.infoHeader.biWidth * time; j++) {
-                mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j - time];
+        for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+            for (int j = 0; j < imgInfo.infoHeader.biWidth * time; j++) {
+                mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j - time];
             }
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, mirror_img,
-              R"(..\resources\4.3\Mirror1.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror1.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, mirror_img,
+              R"(..\resources\4.3\Mirror1.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror1.bmp)",
+              imgInfo.imgSize);
     }
 }
 
 //垂直镜像
 void Vertical_Mirror(char *filename) {
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    auto *mirror_img = new unsigned char[imginfo.imgSize];
-    int time = imginfo.infoHeader.biBitCount / 8;
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < imginfo.infoHeader.biWidth * time; j++) {
-            mirror_img[i * width + j] = imginfo.img[(imginfo.infoHeader.biHeight - i - 1) * width + j];
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *mirror_img = new unsigned char[imgInfo.imgSize];
+    int time = imgInfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth * time; j++) {
+            mirror_img[i * width + j] = imgInfo.img[(imgInfo.infoHeader.biHeight - i - 1) * width + j];
         }
     }
-    if (imginfo.infoHeader.biBitCount == 8) {
-        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, mirror_img,
-              R"(..\resources\4.3\Mirror2.bmp)", imginfo.imgSize);
-    } else if (imginfo.infoHeader.biBitCount == 24) {
-        write(imginfo.fileHeader, imginfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror2.bmp)",
-              imginfo.imgSize);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, mirror_img,
+              R"(..\resources\4.3\Mirror2.bmp)", imgInfo.imgSize);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror2.bmp)",
+              imgInfo.imgSize);
     }
 }
 
 //旋转
 void Rotate(char *filename, double angle) {
-    IMGINFO imginfo = openImg(filename);
-    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
 
-    int img_width = ceil(abs(imginfo.infoHeader.biHeight * sin(angle)) + abs(width * cos(angle)));//新图像宽
-    int img_height = ceil(abs(width * sin(angle)) + abs(imginfo.infoHeader.biHeight * cos(angle)));//新图像高
+    int img_width = ceil(abs(imgInfo.infoHeader.biHeight * sin(angle)) + abs(width * cos(angle)));//新图像宽
+    int img_height = ceil(abs(width * sin(angle)) + abs(imgInfo.infoHeader.biHeight * cos(angle)));//新图像高
     int new_size = img_width * img_height;
     auto *rotate_img = new unsigned char[new_size];
     for (int i = 0; i < img_height; i++) {
@@ -608,18 +611,18 @@ void Rotate(char *filename, double angle) {
             rotate_img[i * img_width + j] = 255;
         }
     }
-    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if ((i * cos(angle) - j * sin(angle)) >= 0 && (i * sin(angle) + j * cos(angle)) >= 0 &&
-                imginfo.infoHeader.biHeight >= (i * cos(angle) - j * sin(angle)) &&
+                imgInfo.infoHeader.biHeight >= (i * cos(angle) - j * sin(angle)) &&
                 width >= (i * sin(angle) + j * cos(angle)))
                 rotate_img[(int) (i * cos(angle) - j * sin(angle)) * width +
-                           (int) (i * sin(angle) + j * cos(angle))] = imginfo.img[
+                           (int) (i * sin(angle) + j * cos(angle))] = imgInfo.img[
                         i * width + j];
         }
     }
-    write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, rotate_img,
-          R"(..\resources\4.4\Rotate.bmp)", imginfo.imgSize);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, rotate_img,
+          R"(..\resources\4.4\Rotate.bmp)", imgInfo.imgSize);
 }
 
 

@@ -1,31 +1,31 @@
 #ifndef DIP_IMGSTRUCT_H
 #define DIP_IMGSTRUCT_H
 typedef struct tagBITMAPFILEHEADER {
-    unsigned short bfType;
+    [[maybe_unused]] unsigned short bfType;
     unsigned long bfSize;
-    unsigned short bfReserved1;
-    unsigned short bfReserved2;
+    [[maybe_unused]] unsigned short bfReserved1;
+    [[maybe_unused]] unsigned short bfReserved2;
     unsigned long bfOffBits;
 } BITMAPFILEHEADER;
 
 typedef struct tagBITMAPINFOHEADER {
-    unsigned long biSize;
+    [[maybe_unused]] unsigned long biSize;
     long biWidth;
     long biHeight;
-    unsigned short biPlanes;
+    [[maybe_unused]] unsigned short biPlanes;
     unsigned short biBitCount;
-    unsigned long biCompression;
+    [[maybe_unused]] unsigned long biCompression;
     unsigned long biSizeImage;
-    long biXPelsPerMeter;
-    long biYPelsPerMeter;
-    unsigned long biClrUsed;
-    unsigned long biClrImportant;
+    [[maybe_unused]] long biXPelsPerMeter;
+    [[maybe_unused]] long biYPelsPerMeter;
+    [[maybe_unused]] unsigned long biClrUsed;
+    [[maybe_unused]] unsigned long biClrImportant;
 } BITMAPINFOHEADER;
 
 typedef struct tagRGBQUAD {
-    unsigned char rgbBlue;
-    unsigned char rgbGreen;
-    unsigned char rgbRed;
-    unsigned char rgbReserved;
+    [[maybe_unused]] unsigned char rgbBlue;
+    [[maybe_unused]] unsigned char rgbGreen;
+    [[maybe_unused]] unsigned char rgbRed;
+    [[maybe_unused]] unsigned char rgbReserved;
 } RGBQUAD;
 #endif //DIP_IMGSTRUCT_H
