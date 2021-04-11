@@ -20,15 +20,15 @@ void quickSort(int a[], int l, int r) {
         return;
     int i = l;
     int j = r;
-    int key = a[l];//é€‰æ‹©ç¬¬ä¸€ä¸ªæ•°ä¸ºkey
+    int key = a[l];//Ñ¡ÔñµÚÒ»¸öÊıÎªkey
     while (i < j) {
-        while (i < j && a[j] >= key)//ä»å³å‘å·¦æ‰¾ç¬¬ä¸€ä¸ªå°äºkeyçš„å€¼
+        while (i < j && a[j] >= key)//´ÓÓÒÏò×óÕÒµÚÒ»¸öĞ¡ÓÚkeyµÄÖµ
             j--;
         if (i < j) {
             a[i] = a[j];
             i++;
         }
-        while (i < j && a[i] < key)//ä»å·¦å‘å³æ‰¾ç¬¬ä¸€ä¸ªå¤§äºkeyçš„å€¼
+        while (i < j && a[i] < key)//´Ó×óÏòÓÒÕÒµÚÒ»¸ö´óÓÚkeyµÄÖµ
             i++;
         if (i < j) {
             a[j] = a[i];
@@ -36,11 +36,11 @@ void quickSort(int a[], int l, int r) {
         }
     }
     a[i] = key;
-    quickSort(a, l, i - 1);//ç»§ç»­æ’å·¦éƒ¨åˆ†ï¼Œé€’å½’è°ƒç”¨
-    quickSort(a, i + 1, r);//ç»§ç»­æ’å³éƒ¨åˆ†ï¼Œé€’å½’è°ƒç”¨
+    quickSort(a, l, i - 1);//¼ÌĞøÅÅ×ó²¿·Ö£¬µİ¹éµ÷ÓÃ
+    quickSort(a, i + 1, r);//¼ÌĞøÅÅÓÒ²¿·Ö£¬µİ¹éµ÷ÓÃ
 }
 
-//å¥‡æ•°ä¸ªæ•°æ®æ±‚ä¸­é—´å€¼
+//ÆæÊı¸öÊı¾İÇóÖĞ¼äÖµ
 int getMiddle(const int *arr, int count) {
     int *copy = (int *) malloc(sizeof(int) * count);
     for (int i = 0; i < count; i++) {
@@ -50,33 +50,33 @@ int getMiddle(const int *arr, int count) {
     return copy[count / 2 + 1];
 }
 
-//24ä½åˆ†è‰²
+//24Î»·ÖÉ«
 void ColorSeparation(char *filename) {
     IMGINFO imginfo = openImg(filename);
     int bmpHeight = imginfo.infoHeader.biHeight;
     int bmpWidth = imginfo.imgSize / imginfo.infoHeader.biHeight;
-    //åˆ†è‰²å›¾åƒåŒº
+    //·ÖÉ«Í¼ÏñÇø
     auto *img_r = new unsigned char[imginfo.imgSize];
     auto *img_g = new unsigned char[imginfo.imgSize];
     auto *img_b = new unsigned char[imginfo.imgSize];
-    //åˆ†ç¦»
+    //·ÖÀë
     for (int i = 0; i < bmpHeight; i++) {
         for (int j = 0; j < bmpWidth; j++) {
-            //æŒ‰BGRå–å­˜åˆ°å†…å­˜ä¸­
+            //°´BGRÈ¡´æµ½ÄÚ´æÖĞ
             switch (j % 3) {
-                //BåŒº
+                //BÇø
                 case 0:
                     img_r[i * bmpWidth + j] = 0;
                     img_g[i * bmpWidth + j] = 0;
                     img_b[i * bmpWidth + j] = imginfo.img[i * bmpWidth + j];
                     break;
-                    //GåŒº
+                    //GÇø
                 case 1:
                     img_r[i * bmpWidth + j] = 0;
                     img_g[i * bmpWidth + j] = imginfo.img[i * bmpWidth + j];
                     img_b[i * bmpWidth + j] = 0;
                     break;
-                    //RåŒº
+                    //RÇø
                 case 2:
                     img_r[i * bmpWidth + j] = imginfo.img[i * bmpWidth + j];
                     img_g[i * bmpWidth + j] = 0;
@@ -90,7 +90,7 @@ void ColorSeparation(char *filename) {
     write(imginfo.fileHeader, imginfo.infoHeader, img_b, R"(..\resources\1.1\b.bmp)", imginfo.imgSize);
 }
 
-//24ä½ç°åº¦åŒ–
+//24Î»»Ò¶È»¯
 void Grayscale(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     int new_height = imgInfo.infoHeader.biHeight;
@@ -112,7 +112,7 @@ void Grayscale(char *filename) {
         }
     }
     RGBQUAD pRGB[256];
-    //å†™å…¥è°ƒè‰²æ¿æ•°æ®
+    //Ğ´Èëµ÷É«°åÊı¾İ
     for (int i = 0; i < 256; i++) {
         pRGB[i].rgbBlue = pRGB[i].rgbGreen = pRGB[i].rgbRed = i;
         pRGB[i].rgbReserved = 0;
@@ -126,7 +126,7 @@ void Grayscale(char *filename) {
     write(imgInfo.fileHeader, imgInfo.infoHeader, pRGB, img_grey, R"(..\resources\1.2\grey.bmp)", new_size);
 }
 
-//8ä½åè‰²
+//8Î»·´É«
 void Invert(char *filename) {
     IMGINFO imginfo = openImg(filename);
     int bmpHeight = imginfo.infoHeader.biHeight;
@@ -141,7 +141,7 @@ void Invert(char *filename) {
           imginfo.imgSize);
 }
 
-//ç›´æ–¹å›¾
+//Ö±·½Í¼
 void Histogram(char *filename) {
     int count[256] = {0};
     IMGINFO imginfo = openImg(filename);
@@ -161,7 +161,7 @@ void Histogram(char *filename) {
         }
         k++;
     }
-    //ç›´æ–¹å›¾æ–‡ä»¶å¤´ã€ä¿¡æ¯å¤´
+    //Ö±·½Í¼ÎÄ¼şÍ·¡¢ĞÅÏ¢Í·
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
     fh.bfType = 19778;
@@ -184,7 +184,7 @@ void Histogram(char *filename) {
     int y = ih.biHeight;
     int actual_size = x * y;
     auto *show_img = new unsigned char[actual_size];
-    //ç»˜åˆ¶ç›´æ–¹å›¾
+    //»æÖÆÖ±·½Í¼
     for (int j = 0; j < x; j += 3) {
         int i = 0;
         while (count[j / 3] > 0) {
@@ -204,30 +204,30 @@ void Histogram(char *filename) {
     write(fh, ih, show_img, R"(..\resources\2.1\Histogram.bmp)", actual_size);
 }
 
-//å‡è¡¡åŒ–
+//¾ùºâ»¯
 void Equalization(char *filename) {
     IMGINFO imginfo = openImg(filename);
     int bmpWidth = imginfo.infoHeader.biWidth;
     int bmpHeight = imginfo.infoHeader.biHeight;
-    //å½“å‰ç›´æ–¹å›¾è§£æ
+    //µ±Ç°Ö±·½Í¼½âÎö
     int count[256] = {0};
     for (int i = 0; i < bmpWidth * 3; i += 3) {
         for (int j = 0; j < bmpHeight; j++) {
             if ((imginfo.img[j * bmpWidth * 3 + i] == 0) & (imginfo.img[j * bmpWidth * 3 + i + 1] == 0) &&
                 (imginfo.img[j * bmpWidth * 3 + i + 2] == 0)) {
-                count[i / 3]++;//æ¯ä¸ªç°åº¦çš„ç»Ÿè®¡é‡
+                count[i / 3]++;//Ã¿¸ö»Ò¶ÈµÄÍ³¼ÆÁ¿
             }
         }
     }
-    double p[256] = {0};//æ¯ä¸ªç°åº¦çš„æ¦‚ç‡
+    double p[256] = {0};//Ã¿¸ö»Ò¶ÈµÄ¸ÅÂÊ
     double sum = 0.0;
     for (int k : count) {
-        sum += k;//ç›´æ–¹å›¾ååº”çš„åƒç´ æ€»é‡
+        sum += k;//Ö±·½Í¼·´Ó¦µÄÏñËØ×ÜÁ¿
     }
     for (int k = 0; k < 256; k++) {
         p[k] = ((double) count[k]) / ((double) sum);
     }
-    double pi[256] = {0};//ç´¯åŠ æ¦‚ç‡
+    double pi[256] = {0};//ÀÛ¼Ó¸ÅÂÊ
     pi[0] = p[0];
     for (int k = 1; k < 256; k++) {
         pi[k] = pi[k - 1] + p[k];
@@ -236,7 +236,7 @@ void Equalization(char *filename) {
     for (int k = 0; k < 256; k++) {
         temp[k] = (int) (255 * pi[k] + 0.5);
     }
-    int new_count[256] = {0};//æ–°ç›´æ–¹å›¾è®¡æ•°
+    int new_count[256] = {0};//ĞÂÖ±·½Í¼¼ÆÊı
     for (int k = 0; k < 256; k++) {
         new_count[temp[k]] += (int) (sum * p[k]);
     }
@@ -269,7 +269,7 @@ void Equalization(char *filename) {
     int y = ih.biHeight;
     int actual_size = x * y;
     auto *show_img = new unsigned char[actual_size];
-    //ç»˜åˆ¶ç›´æ–¹å›¾
+    //»æÖÆÖ±·½Í¼
     for (int j = 0; j < x; j += 3) {
         int i = 0;
         while (new_count[j / 3] > 0) {
@@ -289,23 +289,23 @@ void Equalization(char *filename) {
     write(fh, ih, show_img, R"(..\resources\2.2\Equalization.bmp)", actual_size);
 }
 
-//å¹³å‡å¤„ç†
+//Æ½¾ù´¦Àí
 void AverageTreatment(char *filename, int windows_size) {
     int depth = windows_size / 2;
     IMGINFO imginfo = openImg(filename);
     int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
     auto *show_img = new unsigned char[imginfo.imgSize];
     int step = imginfo.infoHeader.biBitCount / 8;
-    //å¿½ç•¥å¼
+    //ºöÂÔÊ½
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
 
-            //è¾¹ç•Œå¤„ç†
+            //±ß½ç´¦Àí
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
                 j >= (imginfo.infoHeader.biWidth - 1) * (imginfo.infoHeader.biBitCount / 8)) {
                 show_img[i * width + j] = imginfo.img[i * width + j];
             }
-                //ä¸­é—´åŒºåŸŸ
+                //ÖĞ¼äÇøÓò
             else {
                 int temp = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
@@ -324,7 +324,7 @@ void AverageTreatment(char *filename, int windows_size) {
         write(imginfo.fileHeader, imginfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment1.bmp)",
               imginfo.imgSize);
     }
-    //æ‰©å……å¼
+    //À©³äÊ½
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             int temp = 0;
@@ -371,7 +371,7 @@ void AverageTreatment(char *filename, int windows_size) {
     }
 }
 
-//ä¸­å€¼æ»¤æ³¢
+//ÖĞÖµÂË²¨
 void MedianFiltering(char *filename, int windows_size) {
     int depth = windows_size / 2;
     IMGINFO imginfo = openImg(filename);
@@ -379,7 +379,7 @@ void MedianFiltering(char *filename, int windows_size) {
     auto *show_img = new unsigned char[imginfo.imgSize];
     int step = imginfo.infoHeader.biBitCount / 8;
     int *temp = (int *) malloc(sizeof(int) * windows_size * windows_size);
-    //å¿½ç•¥å¼
+    //ºöÂÔÊ½
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
@@ -404,7 +404,7 @@ void MedianFiltering(char *filename, int windows_size) {
         write(imginfo.fileHeader, imginfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering1.bmp)",
               imginfo.imgSize);
     }
-    //æ‰©å……å¼
+    //À©³äÊ½
     for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
             if (i <= depth - 1 || i >= imginfo.infoHeader.biHeight - depth || j <= depth - 1 ||
@@ -454,5 +454,143 @@ void MedianFiltering(char *filename, int windows_size) {
               imginfo.imgSize);
     }
 }
+
+//Ëõ·Å
+void Zoom(char *filename, int delta) {
+    IMGINFO imginfo = openImg(filename);
+    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    auto *zoom_img = new unsigned char[imginfo.imgSize];
+}
+
+//Æ½ÒÆ
+void Translation(char *filename, int deltaX, int deltaY) {
+    IMGINFO imginfo = openImg(filename);
+    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    auto *translation_img = new unsigned char[imginfo.imgSize];
+    int time = imginfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < width; j++) {
+            translation_img[i * width + j] = 255;
+        }
+    }
+
+
+    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < width; j++) {
+            if (deltaX >= 0) {
+                if (deltaY >= 0) {
+                    if (i <= imginfo.infoHeader.biHeight - deltaY && j <= width - deltaX * time)
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                } else if (deltaY < 0) {
+                    if (i >= -deltaY && j <= width - deltaX * time)
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                }
+            } else if (deltaX < 0) {
+                if (deltaY >= 0) {
+                    if (i <= imginfo.infoHeader.biHeight - deltaY && j >= -deltaX * time)
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                } else if (deltaY < 0) {
+                    if (i >= -deltaY && j >= -deltaX * time)
+                        translation_img[(i + deltaY) * width + j + deltaX * time] = imginfo.img[i * width + j];
+                }
+            }
+        }
+    }
+
+
+    if (imginfo.infoHeader.biBitCount == 8) {
+        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, translation_img,
+              R"(..\resources\4.2\Translation.bmp)", imginfo.imgSize);
+    } else if (imginfo.infoHeader.biBitCount == 24) {
+        write(imginfo.fileHeader, imginfo.infoHeader, translation_img, R"(..\resources\4.2\Translation.bmp)",
+              imginfo.imgSize);
+    }
+}
+
+//Ë®Æ½¾µÏñ
+void Horizontal_Mirror(char *filename) {
+    IMGINFO imginfo = openImg(filename);
+    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    auto *mirror_img = new unsigned char[imginfo.imgSize];
+    int time = imginfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < width; j++) {
+            mirror_img[i * width + j] = 0;
+        }
+    }
+    if (time == 3) {
+        for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+            for (int j = 0; j < imginfo.infoHeader.biWidth * time; j++) {
+                if (j % 3 == 1)
+                    mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j - 1];
+                else if (j % 3 == 0)
+                    mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j - 3];
+                else
+                    mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j + 1];
+            }
+        }
+    } else if (time == 1) {
+        for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+            for (int j = 0; j < imginfo.infoHeader.biWidth * time; j++) {
+                mirror_img[i * width + j] = imginfo.img[i * width + imginfo.infoHeader.biWidth * time - j - time];
+            }
+        }
+    }
+    if (imginfo.infoHeader.biBitCount == 8) {
+        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, mirror_img,
+              R"(..\resources\4.3\Mirror1.bmp)", imginfo.imgSize);
+    } else if (imginfo.infoHeader.biBitCount == 24) {
+        write(imginfo.fileHeader, imginfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror1.bmp)",
+              imginfo.imgSize);
+    }
+}
+
+//´¹Ö±¾µÏñ
+void Vertical_Mirror(char *filename) {
+    IMGINFO imginfo = openImg(filename);
+    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    auto *mirror_img = new unsigned char[imginfo.imgSize];
+    int time = imginfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imginfo.infoHeader.biWidth * time; j++) {
+            mirror_img[i * width + j] = imginfo.img[(imginfo.infoHeader.biHeight - i - 1) * width + j];
+        }
+    }
+    if (imginfo.infoHeader.biBitCount == 8) {
+        write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, mirror_img,
+              R"(..\resources\4.3\Mirror2.bmp)", imginfo.imgSize);
+    } else if (imginfo.infoHeader.biBitCount == 24) {
+        write(imginfo.fileHeader, imginfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror2.bmp)",
+              imginfo.imgSize);
+    }
+}
+
+//Ğı×ª
+void Rotate(char *filename, double angle) {
+    IMGINFO imginfo = openImg(filename);
+    int width = imginfo.imgSize / imginfo.infoHeader.biHeight;
+    int img_width = ceil(abs(imginfo.infoHeader.biHeight * sin(angle)) + abs(width * cos(angle)));//ĞÂÍ¼Ïñ¿í
+    int img_height = ceil(abs(width * sin(angle)) + abs(imginfo.infoHeader.biHeight * cos(angle)));//ĞÂÍ¼Ïñ¸ß
+    int new_size = img_width * img_height;
+    auto *rotate_img = new unsigned char[new_size];
+    for (int i = 0; i < img_height; i++) {
+        for (int j = 0; j < img_width; j++) {
+            rotate_img[i * img_width + j] = 255;
+        }
+    }
+    for (int i = 0; i < imginfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < width; j++) {
+            if ((i * cos(angle) - j * sin(angle)) >= 0 && (i * sin(angle) + j * cos(angle)) >= 0 &&
+                imginfo.infoHeader.biHeight >= (i * cos(angle) - j * sin(angle)) &&
+                width >= (i * sin(angle) + j * cos(angle)))
+                rotate_img[(int) (i * cos(angle) - j * sin(angle)) * width +
+                           (int) (i * sin(angle) + j * cos(angle))] = imginfo.img[
+                        i * width + j];
+        }
+    }
+    write(imginfo.fileHeader, imginfo.infoHeader, imginfo.pRGB, rotate_img,
+          R"(..\resources\4.4\Rotate.bmp)", imginfo.imgSize);
+}
+
 
 #endif //DIP_HANDLE_H

@@ -16,26 +16,26 @@ IMGINFO openImg(char *filename) {
     IMGINFO imgInfo;
     FILE *bmp;
     fopen_s(&bmp, filename, "rb");
-    //è¯»å…¥æ–‡ä»¶å¤´
+    //¶ÁÈëÎÄ¼şÍ·
     fread(&imgInfo.fileHeader, sizeof(BITMAPFILEHEADER), 1, bmp);
-    //è¯»å…¥ä¿¡æ¯å¤´
+    //¶ÁÈëĞÅÏ¢Í·
     fread(&imgInfo.infoHeader, sizeof(BITMAPINFOHEADER), 1, bmp);
-    //è¯»å…¥è°ƒè‰²æ¿
+    //¶ÁÈëµ÷É«°å
     if (imgInfo.infoHeader.biBitCount == 8) {
         fread(&imgInfo.pRGB, sizeof(RGBQUAD), 256, bmp);
     }
     int bmpHeight = imgInfo.infoHeader.biHeight;
     int bmpWidth = imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8;
-    //å®½åº¦è½¬æ¢
+    //¿í¶È×ª»»
     while (bmpWidth % 4 != 0) {
         bmpWidth++;
     }
     imgInfo.imgSize = bmpHeight * bmpWidth;
-    //åç§»é‡
+    //Æ«ÒÆÁ¿
     int bmpOffset = (int) imgInfo.fileHeader.bfOffBits;
-    //æŒ‡é’ˆè·³è½¬åˆ°å›¾åƒæ•°æ®å¼€å§‹ä½
+    //Ö¸ÕëÌø×ªµ½Í¼ÏñÊı¾İ¿ªÊ¼Î»
     fseek(bmp, bmpOffset, 0);
-    //è¯»å…¥åŸå›¾æ•°æ®
+    //¶ÁÈëÔ­Í¼Êı¾İ
     auto *img = new unsigned char[imgInfo.imgSize];
     fread(img, sizeof(unsigned char), imgInfo.imgSize, bmp);
     imgInfo.img = img;
