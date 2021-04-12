@@ -129,6 +129,7 @@ void Grayscale(char *filename) {
     imgInfo.infoHeader.biBitCount = 8;
     imgInfo.infoHeader.biSizeImage /= 3;
     write(imgInfo.fileHeader, imgInfo.infoHeader, pRGB, img_grey, R"(..\resources\1.2\grey.bmp)", new_size);
+    delete[](img_grey);
 }
 
 //8位反色
@@ -136,14 +137,15 @@ void Invert(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     int bmpHeight = imgInfo.infoHeader.biHeight;
     int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *img_invert = new unsigned char[imgInfo.imgSize];
+    auto *invert_img = new unsigned char[imgInfo.imgSize];
     for (int i = 0; i < bmpHeight; i++) {
         for (int j = 0; j < bmpWidth; j++) {
-            img_invert[i * bmpWidth + j] = 255 - imgInfo.img[i * bmpWidth + j];
+            invert_img[i * bmpWidth + j] = 255 - imgInfo.img[i * bmpWidth + j];
         }
     }
-    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, img_invert, R"(..\resources\1.3\invert.bmp)",
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, invert_img, R"(..\resources\1.3\invert.bmp)",
           imgInfo.imgSize);
+    delete[](invert_img);
 }
 
 //直方图
@@ -207,6 +209,7 @@ void Histogram(char *filename) {
         }
     }
     write(fh, ih, show_img, R"(..\resources\2.1\Histogram.bmp)", actual_size);
+    delete[](show_img);
 }
 
 //均衡化
@@ -292,6 +295,7 @@ void Equalization(char *filename) {
         }
     }
     write(fh, ih, show_img, R"(..\resources\2.2\Equalization.bmp)", actual_size);
+    delete[](show_img);
 }
 
 //平均处理
@@ -374,6 +378,7 @@ void AverageTreatment(char *filename, int windows_size) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment2.bmp)",
               imgInfo.imgSize);
     }
+    delete[](show_img);
 }
 
 //中值滤波
@@ -458,6 +463,7 @@ void MedianFiltering(char *filename, int windows_size) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering2.bmp)",
               imgInfo.imgSize);
     }
+    delete[](show_img);
 }
 
 //缩放
@@ -496,6 +502,7 @@ void Scale(char *filename, float scaleX, float scaleY) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, zoom_img, R"(..\resources\4.1\Zoom.bmp)",
               new_size);
     }
+    delete[](zoom_img);
 }
 
 //平移
@@ -537,6 +544,7 @@ void Translation(char *filename, int deltaX, int deltaY) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, translation_img, R"(..\resources\4.2\Translation.bmp)",
               imgInfo.imgSize);
     }
+    delete[](translation_img);
 }
 
 //水平镜像
@@ -575,6 +583,7 @@ void Horizontal_Mirror(char *filename) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror1.bmp)",
               imgInfo.imgSize);
     }
+    delete[](mirror_img);
 }
 
 //垂直镜像
@@ -595,6 +604,7 @@ void Vertical_Mirror(char *filename) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror2.bmp)",
               imgInfo.imgSize);
     }
+    delete[](mirror_img);
 }
 
 //旋转
@@ -623,7 +633,42 @@ void Rotate(char *filename, double angle) {
     }
     write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, rotate_img,
           R"(..\resources\4.4\Rotate.bmp)", imgInfo.imgSize);
+    delete[](rotate_img);
 }
 
+//给定阈值分割
+void FixedThresholdSegmentation(char *filename, int alpha) {
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    auto *temp_img = new unsigned char[imgInfo.imgSize];
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < width; j++) {
+            if (imgInfo.img[i * width + j] >= alpha) {
+                temp_img[i * width + j] = 255;
+            } else {
+                temp_img[i * width + j] = 0;
+            }
+        }
+        if (imgInfo.infoHeader.biBitCount == 8) {
+            write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
+                  R"(..\resources\5.1\FixedThresholdSegmentation.bmp)", imgInfo.imgSize);
+        } else if (imgInfo.infoHeader.biBitCount == 24) {
+            write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
+                  R"(..\resources\5.1\FixedThresholdSegmentation.bmp)",
+                  imgInfo.imgSize);
+        }
+    }
+    delete[](temp_img);
+}
+
+//迭代阈值分割
+void IterationThresholdSegmentation(char *filename) {
+
+}
+
+//otsu
+void otsu(char *filename) {
+
+}
 
 #endif //DIP_HANDLE_H
