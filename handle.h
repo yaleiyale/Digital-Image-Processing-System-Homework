@@ -745,7 +745,7 @@ void FixedThresholdSegmentation(char *filename, int alpha) {
 }
 
 //µü´úãÐÖµ·Ö¸î
-void IterationThresholdSegmentation(char *filename) {
+void IterationThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     int count[256] = {0};
     int bmpHeight = imgInfo.infoHeader.biHeight;
@@ -781,7 +781,7 @@ void IterationThresholdSegmentation(char *filename) {
         double u1 = pre_sum / pre_count;
         double u2 = next_sum / next_count;
         t2 = (int) (u1 + u2) / 2;
-        if (abs(t2 - t1) > 5) {
+        if (abs(t2 - t1) > alpha) {
             t1 = t2;
         } else {
             bingo = true;

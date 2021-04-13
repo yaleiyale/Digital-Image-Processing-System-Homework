@@ -101,8 +101,10 @@ int main() {
                 system("explorer ..\\resources\\5.1");
                 break;
             case 13://迭代阈值法
+                std::cout << "输入迭代门限值" << "\n";
+                std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\5.2\test%d%d.bmp)", choice / 10, choice % 10);
-                IterationThresholdSegmentation(filename);
+                IterationThresholdSegmentation(filename, alpha);
                 system("explorer ..\\resources\\5.2");
                 break;
             case 14://otsu
