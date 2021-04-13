@@ -214,6 +214,8 @@ void Histogram(char *filename) {
 
 //均衡化
 void Equalization(char *filename) {
+    char origin[50] = R"(..\resources\2.2\origin.bmp)";
+    IMGINFO origin_img = openImg(origin);
     IMGINFO imgInfo = openImg(filename);
     int bmpWidth = imgInfo.infoHeader.biWidth;
     int bmpHeight = imgInfo.infoHeader.biHeight;
@@ -244,10 +246,24 @@ void Equalization(char *filename) {
     for (int k = 0; k < 256; k++) {
         temp[k] = (int) (255 * pi[k] + 1 - 0.5);
     }
+
+    for (int k = 0; k < origin_img.imgSize; k++) {
+        int colour = origin_img.img[k];
+        origin_img.img[k] = temp[colour];
+    }
+
     int new_count[256] = {0};//新直方图计数
     for (int k = 0; k < 256; k++) {
         new_count[temp[k]] += (int) (sum * p[k]);
     }
+    if (origin_img.infoHeader.biBitCount == 8) {
+        write(origin_img.fileHeader, origin_img.infoHeader, origin_img.pRGB, origin_img.img,
+              R"(..\resources\2.2\new_img.bmp)", origin_img.imgSize);
+    } else if (origin_img.infoHeader.biBitCount == 24) {
+        write(origin_img.fileHeader, origin_img.infoHeader, origin_img.img, R"(..\resources\2.2\new_img.bmp)",
+              origin_img.imgSize);
+    }
+
 
     int clrUsed = 0;
     for (int k : count) {
@@ -636,6 +652,76 @@ void Rotate(char *filename, double angle) {
     delete[](rotate_img);
 }
 
+//绘制带标记的直方图
+void LabeledHistogram(char *filename, const char *target, int alpha) {
+    IMGINFO imgInfo = openImg(filename);
+    int count[256] = {0};
+    int bmpHeight = imgInfo.infoHeader.biHeight;
+    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    for (int i = 0; i < bmpHeight; i++) {
+        for (int j = 0; j < bmpWidth; j++) {
+            int now = imgInfo.img[i * bmpWidth + j];
+            count[now]++;
+        }
+    }
+    int k = 0;
+    int clrUsed = 0;
+    while (k < 256) {
+        if (count[k] > 0) {
+            clrUsed++;
+        }
+        k++;
+    }
+    //直方图文件头、信息头
+    BITMAPFILEHEADER fh;
+    BITMAPINFOHEADER ih;
+    fh.bfType = 19778;
+    fh.bfReserved1 = 0;
+    fh.bfReserved2 = 0;
+    fh.bfOffBits = 54;
+    ih.biSize = 40;
+    ih.biWidth = 256;
+    ih.biHeight = getMax(count, 256) / 10 * 10 + 10;
+    fh.bfSize = ih.biWidth * ih.biHeight * 3 + fh.bfOffBits;
+    ih.biPlanes = 1;
+    ih.biBitCount = 24;
+    ih.biCompression = 0;
+    ih.biSizeImage = fh.bfSize + 10;
+    ih.biXPelsPerMeter = 4724;
+    ih.biYPelsPerMeter = 4724;
+    ih.biClrUsed = clrUsed;
+    ih.biClrImportant = 0;
+    int x = ih.biWidth * 3;
+    int y = ih.biHeight;
+    int actual_size = x * y;
+    auto *show_img = new unsigned char[actual_size];
+    //绘制直方图
+    for (int j = 0; j < x; j += 3) {
+        int i = 0;
+        while (count[j / 3] > 0) {
+            if (j / 3 == alpha) {
+                show_img[i * x + j] = 0;
+                show_img[i * x + j + 1] = 0;
+                show_img[i * x + j + 2] = 255;
+            } else {
+                show_img[i * x + j] = 0;
+                show_img[i * x + j + 1] = 0;
+                show_img[i * x + j + 2] = 0;
+            }
+            count[j / 3]--;
+            i++;
+        }
+        while (i < y) {
+            show_img[i * x + j] = 255;
+            show_img[i * x + j + 1] = 255;
+            show_img[i * x + j + 2] = 255;
+            i++;
+        }
+    }
+    write(fh, ih, show_img, target, actual_size);
+    delete[](show_img);
+}
+
 //给定阈值分割
 void FixedThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
@@ -643,11 +729,7 @@ void FixedThresholdSegmentation(char *filename, int alpha) {
     auto *temp_img = new unsigned char[imgInfo.imgSize];
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < width; j++) {
-            if (imgInfo.img[i * width + j] >= alpha) {
-                temp_img[i * width + j] = 255;
-            } else {
-                temp_img[i * width + j] = 0;
-            }
+            temp_img[i * width + j] = imgInfo.img[i * width + j] >= alpha ? 255 : 0;
         }
         if (imgInfo.infoHeader.biBitCount == 8) {
             write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
@@ -659,10 +741,68 @@ void FixedThresholdSegmentation(char *filename, int alpha) {
         }
     }
     delete[](temp_img);
+    LabeledHistogram(filename, R"(..\resources\5.1\Histogram.bmp)", alpha);
 }
 
 //迭代阈值分割
 void IterationThresholdSegmentation(char *filename) {
+    IMGINFO imgInfo = openImg(filename);
+    int count[256] = {0};
+    int bmpHeight = imgInfo.infoHeader.biHeight;
+    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+    int *copy = (int *) malloc(sizeof(int) * imgInfo.imgSize);
+    for (int i = 0; i < imgInfo.imgSize; i++) {
+        copy[i] = imgInfo.img[i];
+    }
+    //初始阈值
+    int t1 = getMiddle(copy, imgInfo.imgSize);
+    free(copy);
+    //统计灰度计数
+    for (int i = 0; i < bmpHeight; i++) {
+        for (int j = 0; j < bmpWidth; j++) {
+            int now = imgInfo.img[i * bmpWidth + j];
+            count[now]++;
+        }
+    }
+    int t2;
+    bool bingo = false;
+    //迭代计算阈值
+    while (!bingo) {
+        double pre_sum = 0, next_sum = 0, pre_count = 0, next_count = 0;
+        for (int i = 0; i < 256; i++) {
+            if (i <= t1) {
+                pre_sum += i * count[i];
+                pre_count += count[i];
+            } else {
+                next_sum += i * count[i];
+                next_count += count[i];
+            }
+        }
+        double u1 = pre_sum / pre_count;
+        double u2 = next_sum / next_count;
+        t2 = (int) (u1 + u2) / 2;
+        if (abs(t2 - t1) > 5) {
+            t1 = t2;
+        } else {
+            bingo = true;
+        }
+    }
+    auto *temp_img = new unsigned char[imgInfo.imgSize];
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < bmpWidth; j++) {
+            temp_img[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j] >= t2 ? 255 : 0;
+        }
+        if (imgInfo.infoHeader.biBitCount == 8) {
+            write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
+                  R"(..\resources\5.2\IterationThresholdSegmentation.bmp)", imgInfo.imgSize);
+        } else if (imgInfo.infoHeader.biBitCount == 24) {
+            write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
+                  R"(..\resources\5.2\IterationThresholdSegmentation.bmp)",
+                  imgInfo.imgSize);
+        }
+    }
+    delete[](temp_img);
+    LabeledHistogram(filename, R"(..\resources\5.2\Histogram.bmp)", t2);
 
 }
 
