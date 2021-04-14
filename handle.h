@@ -196,7 +196,7 @@ void Histogram(char *filename) {
     delete[](show_img);
 }
 
-//均衡化
+//直方图均衡化
 void Equalization(char *filename) {
     char origin[50] = R"(..\resources\2.2\origin.bmp)";
     IMGINFO origin_img = openImg(origin);
