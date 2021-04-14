@@ -14,7 +14,6 @@ int getMax(const int *arr, int count) {
         }
     }
     return temp;
-
 }
 
 void quickSort(int a[], int l, int r) {
@@ -794,51 +793,47 @@ void otsu(char *filename) {
     int bmpWidth = imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8);
     int bmpHeight = imgInfo.infoHeader.biHeight;
     int count[GrayScale] = {0};
-    float pixelPro[GrayScale] = {0};
+    double p[GrayScale] = {0};
     int i, j, threshold = 0;
     float sum = (float) imgInfo.infoHeader.biWidth * (float) imgInfo.infoHeader.biHeight *
                 ((float) imgInfo.infoHeader.biBitCount / 8);
     //统计灰度计数
     for (i = 0; i < bmpHeight; i++) {
         for (j = 0; j < bmpWidth; j++) {
-            int now = imgInfo.img[i * bmpWidth + j];
+            int now = imgInfo.img[i * imgInfo.actual_width + j];
             count[now]++;
         }
     }
 
     //计算每个像素在整幅图像中的比例
-    float maxPro = 0.0;
-    int kk = 0;
+    double max_p = 0.0;
     for (i = 0; i < GrayScale; i++) {
-        pixelPro[i] = (float) count[i] / sum;
-        if (pixelPro[i] > maxPro) {
-            maxPro = pixelPro[i];
-            kk = i;
+        p[i] = (float) count[i] / sum;
+        if (p[i] > max_p) {
+            max_p = p[i];
         }
     }
-
-    //遍历灰度级[0,255]
-    float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
-    for (i = 0; i < GrayScale; i++)     // i作为阈值
-    {
-        w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
+    //遍历寻找最大类间方差
+    double back_p, front_p, back_sum, front_sum, back_aver, front_aver, average, g, max_g = 0;
+    for (i = 0; i < GrayScale; i++) {
+        back_p = front_p = back_sum = front_sum = back_aver = front_aver = average = g = 0;
         for (j = 0; j < GrayScale; j++) {
             if (j <= i)   //背景部分
             {
-                w0 += pixelPro[j];
-                u0tmp += (float) j * pixelPro[j];
+                back_p += p[j];
+                back_sum += j * p[j];
             } else   //前景部分
             {
-                w1 += pixelPro[j];
-                u1tmp += (float) j * pixelPro[j];
+                front_p += p[j];
+                front_sum += j * p[j];
             }
         }
-        u0 = u0tmp / w0;
-        u1 = u1tmp / w1;
-        u = u0tmp + u1tmp;
-        deltaTmp = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2);
-        if (deltaTmp > deltaMax) {
-            deltaMax = deltaTmp;
+        back_aver = back_sum / back_p;
+        front_aver = front_sum / front_p;
+        average = back_sum + front_sum;
+        g = back_p * pow((back_aver - average), 2) + front_p * pow((front_aver - average), 2);
+        if (g > max_g) {
+            max_g = g;
             threshold = i;
         }
     }
