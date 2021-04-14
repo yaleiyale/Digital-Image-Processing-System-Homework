@@ -2,11 +2,13 @@
 #define DIP_WRITEIMG_H
 
 #include "imgstruct.h"
+#include "openimg.h"
 #include <iostream>
 
 
 void
-write(BITMAPFILEHEADER fileHeader, BITMAPINFOHEADER infoHeader, unsigned char *img, const char *filename, int size) {
+write(BITMAPFILEHEADER fileHeader, BITMAPINFOHEADER infoHeader, unsigned char *img, const char *filename,
+      unsigned long size) {
     FILE *file;
     fopen_s(&file, filename, "wb");
     fwrite(&fileHeader, sizeof(fileHeader), 1, file);
@@ -17,7 +19,7 @@ write(BITMAPFILEHEADER fileHeader, BITMAPINFOHEADER infoHeader, unsigned char *i
 
 void
 write(BITMAPFILEHEADER fileHeader, BITMAPINFOHEADER infoHeader, RGBQUAD *pRGB, unsigned char *img, const char *filename,
-      int size) {
+      unsigned long size) {
     FILE *file;
     fopen_s(&file, filename, "wb");
     fwrite(&fileHeader, sizeof(fileHeader), 1, file);

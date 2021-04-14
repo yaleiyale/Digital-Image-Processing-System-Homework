@@ -9,7 +9,7 @@ typedef struct tagIMGINFO {
     BITMAPINFOHEADER infoHeader;
     RGBQUAD pRGB[256];
     unsigned char *img;
-    int imgSize;
+    int actual_width;
 } IMGINFO;
 
 IMGINFO openImg(char *filename) {
@@ -24,20 +24,19 @@ IMGINFO openImg(char *filename) {
     if (imgInfo.infoHeader.biBitCount == 8) {
         fread(&imgInfo.pRGB, sizeof(RGBQUAD), 256, bmp);
     }
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8;
+    int bmpWidth = imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8);
     //宽度转换
     while (bmpWidth % 4 != 0) {
         bmpWidth++;
     }
-    imgInfo.imgSize = bmpHeight * bmpWidth;
+    imgInfo.actual_width = bmpWidth;
     //偏移量
     int bmpOffset = (int) imgInfo.fileHeader.bfOffBits;
     //指针跳转到图像数据开始位
     fseek(bmp, bmpOffset, 0);
     //读入原图数据
-    auto *img = new unsigned char[imgInfo.imgSize];
-    fread(img, sizeof(unsigned char), imgInfo.imgSize, bmp);
+    auto *img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    fread(img, sizeof(unsigned char), imgInfo.infoHeader.biSizeImage, bmp);
     imgInfo.img = img;
     fclose(bmp);
     return imgInfo;

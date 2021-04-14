@@ -55,41 +55,39 @@ int getMiddle(const int *arr, int count) {
 //24位分色
 void ColorSeparation(char *filename) {
     IMGINFO imgInfo = openImg(filename);
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
     //分色图像区
-    auto *img_r = new unsigned char[imgInfo.imgSize];
-    auto *img_g = new unsigned char[imgInfo.imgSize];
-    auto *img_b = new unsigned char[imgInfo.imgSize];
+    auto *img_r = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    auto *img_g = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    auto *img_b = new unsigned char[imgInfo.infoHeader.biSizeImage];
     //分离
-    for (int i = 0; i < bmpHeight; i++) {
-        for (int j = 0; j < bmpWidth; j++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
             //按BGR取存到内存中
             switch (j % 3) {
                 //B区
                 case 0:
-                    img_r[i * bmpWidth + j] = 0;
-                    img_g[i * bmpWidth + j] = 0;
-                    img_b[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j];
+                    img_r[i * imgInfo.actual_width + j] = 0;
+                    img_g[i * imgInfo.actual_width + j] = 0;
+                    img_b[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
                     break;
                     //G区
                 case 1:
-                    img_r[i * bmpWidth + j] = 0;
-                    img_g[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j];
-                    img_b[i * bmpWidth + j] = 0;
+                    img_r[i * imgInfo.actual_width + j] = 0;
+                    img_g[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
+                    img_b[i * imgInfo.actual_width + j] = 0;
                     break;
                     //R区
                 case 2:
-                    img_r[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j];
-                    img_g[i * bmpWidth + j] = 0;
-                    img_b[i * bmpWidth + j] = 0;
+                    img_r[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
+                    img_g[i * imgInfo.actual_width + j] = 0;
+                    img_b[i * imgInfo.actual_width + j] = 0;
                     break;
             }
         }
     }
-    write(imgInfo.fileHeader, imgInfo.infoHeader, img_r, R"(..\resources\1.1\r.bmp)", imgInfo.imgSize);
-    write(imgInfo.fileHeader, imgInfo.infoHeader, img_g, R"(..\resources\1.1\g.bmp)", imgInfo.imgSize);
-    write(imgInfo.fileHeader, imgInfo.infoHeader, img_b, R"(..\resources\1.1\b.bmp)", imgInfo.imgSize);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, img_r, R"(..\resources\1.1\r.bmp)", imgInfo.infoHeader.biSizeImage);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, img_g, R"(..\resources\1.1\g.bmp)", imgInfo.infoHeader.biSizeImage);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, img_b, R"(..\resources\1.1\b.bmp)", imgInfo.infoHeader.biSizeImage);
     delete[](img_r);
     delete[](img_g);
     delete[](img_b);
@@ -98,20 +96,15 @@ void ColorSeparation(char *filename) {
 //24位灰度化
 void Grayscale(char *filename) {
     IMGINFO imgInfo = openImg(filename);
-    int new_height = imgInfo.infoHeader.biHeight;
-    int new_width = imgInfo.infoHeader.biWidth;
-    while (new_width % 4 != 0) {
-        new_width++;
-    }
-    int new_size = new_height * new_width;
+    int new_width = (imgInfo.infoHeader.biWidth + 3) / 4 * 4;
+    int new_size = imgInfo.infoHeader.biHeight * new_width;
     auto *img_grey = new unsigned char[new_size];
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    for (int i = 0; i < bmpHeight; i++) {
-        for (int j = 1; j <= bmpWidth; j++) {
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 1; j <= imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8); j++) {
             if (j % 3 == 0) {
-                double temp = imgInfo.img[i * bmpWidth + j - 3] * 0.114 + imgInfo.img[i * bmpWidth + j - 2] * 0.587 +
-                              imgInfo.img[i * bmpWidth + j - 1] * 0.299;
+                double temp = imgInfo.img[i * imgInfo.actual_width + j - 3] * 0.114 +
+                              imgInfo.img[i * imgInfo.actual_width + j - 2] * 0.587 +
+                              imgInfo.img[i * imgInfo.actual_width + j - 1] * 0.299;
                 img_grey[i * new_width + j / 3 - 1] = (unsigned char) temp;
             }
         }
@@ -122,12 +115,10 @@ void Grayscale(char *filename) {
         pRGB[i].rgbBlue = pRGB[i].rgbGreen = pRGB[i].rgbRed = i;
         pRGB[i].rgbReserved = 0;
     }
-    imgInfo.fileHeader.bfSize -= 54;
-    imgInfo.fileHeader.bfSize /= 3;
-    imgInfo.fileHeader.bfSize += 54 + sizeof(RGBQUAD) * 256;
     imgInfo.fileHeader.bfOffBits += sizeof(RGBQUAD) * 256;
     imgInfo.infoHeader.biBitCount = 8;
-    imgInfo.infoHeader.biSizeImage /= 3;
+    imgInfo.infoHeader.biSizeImage = new_size;
+    imgInfo.fileHeader.bfSize = 54 + imgInfo.infoHeader.biSizeImage;
     write(imgInfo.fileHeader, imgInfo.infoHeader, pRGB, img_grey, R"(..\resources\1.2\grey.bmp)", new_size);
     delete[](img_grey);
 }
@@ -135,16 +126,14 @@ void Grayscale(char *filename) {
 //8位反色
 void Invert(char *filename) {
     IMGINFO imgInfo = openImg(filename);
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *invert_img = new unsigned char[imgInfo.imgSize];
-    for (int i = 0; i < bmpHeight; i++) {
-        for (int j = 0; j < bmpWidth; j++) {
-            invert_img[i * bmpWidth + j] = 255 - imgInfo.img[i * bmpWidth + j];
+    auto *invert_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth; j++) {
+            invert_img[i * imgInfo.actual_width + j] = 255 - imgInfo.img[i * imgInfo.actual_width + j];
         }
     }
     write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, invert_img, R"(..\resources\1.3\invert.bmp)",
-          imgInfo.imgSize);
+          imgInfo.infoHeader.biSizeImage);
     delete[](invert_img);
 }
 
@@ -152,11 +141,10 @@ void Invert(char *filename) {
 void Histogram(char *filename) {
     int count[256] = {0};
     IMGINFO imgInfo = openImg(filename);
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    for (int i = 0; i < bmpHeight; i++) {
-        for (int j = 0; j < bmpWidth; j++) {
-            int now = imgInfo.img[i * bmpWidth + j];
+
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8); j++) {
+            int now = imgInfo.img[i * imgInfo.actual_width + j];
             count[now]++;
         }
     }
@@ -182,33 +170,30 @@ void Histogram(char *filename) {
     ih.biPlanes = 1;
     ih.biBitCount = 24;
     ih.biCompression = 0;
-    ih.biSizeImage = fh.bfSize + 10;
+    ih.biSizeImage = ih.biWidth * ih.biHeight * 3;
     ih.biXPelsPerMeter = 4724;
     ih.biYPelsPerMeter = 4724;
     ih.biClrUsed = clrUsed;
     ih.biClrImportant = 0;
-    int x = ih.biWidth * 3;
-    int y = ih.biHeight;
-    int actual_size = x * y;
-    auto *show_img = new unsigned char[actual_size];
+    auto *show_img = new unsigned char[ih.biSizeImage];
     //绘制直方图
-    for (int j = 0; j < x; j += 3) {
+    for (int j = 0; j < ih.biWidth * 3; j += 3) {
         int i = 0;
         while (count[j / 3] > 0) {
-            show_img[i * x + j] = 0;
-            show_img[i * x + j + 1] = 0;
-            show_img[i * x + j + 2] = 0;
+            show_img[i * ih.biWidth * 3 + j] = 0;
+            show_img[i * ih.biWidth * 3 + j + 1] = 0;
+            show_img[i * ih.biWidth * 3 + j + 2] = 0;
             count[j / 3]--;
             i++;
         }
-        while (i < y) {
-            show_img[i * x + j] = 255;
-            show_img[i * x + j + 1] = 255;
-            show_img[i * x + j + 2] = 255;
+        while (i < ih.biHeight) {
+            show_img[i * ih.biWidth * 3 + j] = 255;
+            show_img[i * ih.biWidth * 3 + j + 1] = 255;
+            show_img[i * ih.biWidth * 3 + j + 2] = 255;
             i++;
         }
     }
-    write(fh, ih, show_img, R"(..\resources\2.1\Histogram.bmp)", actual_size);
+    write(fh, ih, show_img, R"(..\resources\2.1\Histogram.bmp)", ih.biSizeImage);
     delete[](show_img);
 }
 
@@ -217,14 +202,13 @@ void Equalization(char *filename) {
     char origin[50] = R"(..\resources\2.2\origin.bmp)";
     IMGINFO origin_img = openImg(origin);
     IMGINFO imgInfo = openImg(filename);
-    int bmpWidth = imgInfo.infoHeader.biWidth;
-    int bmpHeight = imgInfo.infoHeader.biHeight;
     //当前直方图解析
     int count[256] = {0};
-    for (int i = 0; i < bmpWidth * 3; i += 3) {
-        for (int j = 0; j < bmpHeight; j++) {
-            if ((imgInfo.img[j * bmpWidth * 3 + i] == 0) & (imgInfo.img[j * bmpWidth * 3 + i + 1] == 0) &&
-                (imgInfo.img[j * bmpWidth * 3 + i + 2] == 0)) {
+    for (int i = 0; i < imgInfo.infoHeader.biWidth * 3; i += 3) {
+        for (int j = 0; j < imgInfo.infoHeader.biHeight; j++) {
+            if ((imgInfo.img[j * imgInfo.infoHeader.biWidth * 3 + i] == 0) &
+                (imgInfo.img[j * imgInfo.infoHeader.biWidth * 3 + i + 1] == 0) &&
+                (imgInfo.img[j * imgInfo.infoHeader.biWidth * 3 + i + 2] == 0)) {
                 count[i / 3]++;//每个灰度的统计量
             }
         }
@@ -247,7 +231,7 @@ void Equalization(char *filename) {
         temp[k] = (int) (255 * pi[k] + 1 - 0.5);
     }
 
-    for (int k = 0; k < origin_img.imgSize; k++) {
+    for (int k = 0; k < origin_img.infoHeader.biSizeImage; k++) {
         int colour = origin_img.img[k];
         origin_img.img[k] = temp[colour];
     }
@@ -258,10 +242,10 @@ void Equalization(char *filename) {
     }
     if (origin_img.infoHeader.biBitCount == 8) {
         write(origin_img.fileHeader, origin_img.infoHeader, origin_img.pRGB, origin_img.img,
-              R"(..\resources\2.2\new_img.bmp)", origin_img.imgSize);
+              R"(..\resources\2.2\new_img.bmp)", origin_img.infoHeader.biSizeImage);
     } else if (origin_img.infoHeader.biBitCount == 24) {
         write(origin_img.fileHeader, origin_img.infoHeader, origin_img.img, R"(..\resources\2.2\new_img.bmp)",
-              origin_img.imgSize);
+              origin_img.infoHeader.biSizeImage);
     }
 
 
@@ -284,7 +268,7 @@ void Equalization(char *filename) {
     ih.biPlanes = 1;
     ih.biBitCount = 24;
     ih.biCompression = 0;
-    ih.biSizeImage = fh.bfSize + 10;
+    ih.biSizeImage = ih.biWidth * ih.biHeight * 3;
     ih.biXPelsPerMeter = 4724;
     ih.biYPelsPerMeter = 4724;
     ih.biClrUsed = clrUsed;
@@ -318,40 +302,39 @@ void Equalization(char *filename) {
 void AverageTreatment(char *filename, int windows_size) {
     int depth = windows_size / 2;
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *show_img = new unsigned char[imgInfo.imgSize];
+    auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int step = imgInfo.infoHeader.biBitCount / 8;
     //忽略式
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
 
             //边界处理
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
                 j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
-                show_img[i * width + j] = imgInfo.img[i * width + j];
+                show_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
             }
                 //中间区域
             else {
                 int temp = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp += imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp += imgInfo.img[(i + width_pointer) * imgInfo.actual_width + j + (step * height_pointer)];
                     }
                 }
-                show_img[i * width + j] = temp / (windows_size * windows_size);
+                show_img[i * imgInfo.actual_width + j] = temp / (windows_size * windows_size);
             }
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
-              R"(..\resources\3.1\AverageTreatment1.bmp)", imgInfo.imgSize);
+              R"(..\resources\3.1\AverageTreatment1.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment1.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     //扩充式
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
             int temp = 0;
             int x, y;
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
@@ -373,26 +356,26 @@ void AverageTreatment(char *filename, int windows_size) {
                         if (x > ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1)) {
                             x = ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1);
                         }
-                        temp += imgInfo.img[y * width + x];
+                        temp += imgInfo.img[y * imgInfo.actual_width + x];
                     }
                 }
-                show_img[i * width + j] = temp / (windows_size * windows_size);
+                show_img[i * imgInfo.actual_width + j] = temp / (windows_size * windows_size);
             } else {
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp += imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp += imgInfo.img[(i + width_pointer) * imgInfo.actual_width + j + (step * height_pointer)];
                     }
                 }
-                show_img[i * width + j] = temp / (windows_size * windows_size);
+                show_img[i * imgInfo.actual_width + j] = temp / (windows_size * windows_size);
             }
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
-              R"(..\resources\3.1\AverageTreatment2.bmp)", imgInfo.imgSize);
+              R"(..\resources\3.1\AverageTreatment2.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.1\AverageTreatment2.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](show_img);
 }
@@ -401,38 +384,37 @@ void AverageTreatment(char *filename, int windows_size) {
 void MedianFiltering(char *filename, int windows_size) {
     int depth = windows_size / 2;
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *show_img = new unsigned char[imgInfo.imgSize];
+    auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int step = imgInfo.infoHeader.biBitCount / 8;
     int *temp = (int *) malloc(sizeof(int) * windows_size * windows_size);
     //忽略式
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
                 j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
-                show_img[i * width + j] = imgInfo.img[i * width + j];
+                show_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
             } else {
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp[k] = imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp[k] = imgInfo.img[(i + width_pointer) * imgInfo.actual_width + j + (step * height_pointer)];
                         k++;
                     }
                 }
-                show_img[i * width + j] = getMiddle(temp, windows_size * windows_size);
+                show_img[i * imgInfo.actual_width + j] = getMiddle(temp, windows_size * windows_size);
             }
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
-              R"(..\resources\3.2\MedianFiltering1.bmp)", imgInfo.imgSize);
+              R"(..\resources\3.2\MedianFiltering1.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering1.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     //扩充式
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
                 j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
                 int x, y;
@@ -455,29 +437,29 @@ void MedianFiltering(char *filename, int windows_size) {
                         if (x > ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1)) {
                             x = ((imgInfo.infoHeader.biWidth * imgInfo.infoHeader.biBitCount / 8) - 1);
                         }
-                        temp[k] = imgInfo.img[y * width + x];
+                        temp[k] = imgInfo.img[y * imgInfo.actual_width + x];
                         k++;
                     }
                 }
-                show_img[i * width + j] = getMiddle(temp, windows_size * windows_size);
+                show_img[i * imgInfo.actual_width + j] = getMiddle(temp, windows_size * windows_size);
             } else {
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
                     for (int height_pointer = -depth; height_pointer <= depth; height_pointer++) {
-                        temp[k] = imgInfo.img[(i + width_pointer) * width + j + (step * height_pointer)];
+                        temp[k] = imgInfo.img[(i + width_pointer) * imgInfo.actual_width + j + (step * height_pointer)];
                         k++;
                     }
                 }
-                show_img[i * width + j] = getMiddle(temp, windows_size * windows_size);
+                show_img[i * imgInfo.actual_width + j] = getMiddle(temp, windows_size * windows_size);
             }
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
-              R"(..\resources\3.2\MedianFiltering2.bmp)", imgInfo.imgSize);
+              R"(..\resources\3.2\MedianFiltering2.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\3.2\MedianFiltering2.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](show_img);
 }
@@ -486,7 +468,7 @@ void MedianFiltering(char *filename, int windows_size) {
 void Scale(char *filename, float scaleX, float scaleY) {
 
     IMGINFO imgInfo = openImg((filename));
-    int origin_width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
+
     int zoom_width = (int) (scaleX * (float) imgInfo.infoHeader.biWidth);
     int zoom_height = (int) (scaleY * (float) imgInfo.infoHeader.biHeight);
     int new_width = (zoom_width * imgInfo.infoHeader.biBitCount / 8 + 3) / 4 * 4;
@@ -500,8 +482,8 @@ void Scale(char *filename, float scaleX, float scaleY) {
             y = (int) ((float) new_y / scaleY);
             x = (int) ((float) new_x / scaleX);
             if (y >= 0 && y < imgInfo.infoHeader.biHeight && x >= 0 &&
-                x < origin_width)
-                zoom_img[i * new_width + j] = imgInfo.img[y * origin_width +
+                x < imgInfo.actual_width)
+                zoom_img[i * new_width + j] = imgInfo.img[y * imgInfo.actual_width +
                                                           x];
 
         }
@@ -524,41 +506,44 @@ void Scale(char *filename, float scaleX, float scaleY) {
 //平移
 void Translation(char *filename, int deltaX, int deltaY) {
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *translation_img = new unsigned char[imgInfo.imgSize];
+    auto *translation_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int time = imgInfo.infoHeader.biBitCount / 8;
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
-            translation_img[i * width + j] = 255;
+        for (int j = 0; j < imgInfo.actual_width; j++) {
+            translation_img[i * imgInfo.actual_width + j] = 255;
         }
     }
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
             if (deltaX >= 0) {
                 if (deltaY >= 0) {
-                    if (i < imgInfo.infoHeader.biHeight - deltaY && j <= width - deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
+                    if (i < imgInfo.infoHeader.biHeight - deltaY && j <= imgInfo.actual_width - deltaX * time)
+                        translation_img[(i + deltaY) * imgInfo.actual_width + j + deltaX * time] = imgInfo.img[
+                                i * imgInfo.actual_width + j];
                 } else if (deltaY < 0) {
-                    if (i >= -deltaY && j <= width - deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
+                    if (i >= -deltaY && j <= imgInfo.actual_width - deltaX * time)
+                        translation_img[(i + deltaY) * imgInfo.actual_width + j + deltaX * time] = imgInfo.img[
+                                i * imgInfo.actual_width + j];
                 }
             } else if (deltaX < 0) {
                 if (deltaY >= 0) {
                     if (i < imgInfo.infoHeader.biHeight - deltaY && j >= -deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
+                        translation_img[(i + deltaY) * imgInfo.actual_width + j + deltaX * time] = imgInfo.img[
+                                i * imgInfo.actual_width + j];
                 } else if (deltaY < 0) {
                     if (i >= -deltaY && j >= -deltaX * time)
-                        translation_img[(i + deltaY) * width + j + deltaX * time] = imgInfo.img[i * width + j];
+                        translation_img[(i + deltaY) * imgInfo.actual_width + j + deltaX * time] = imgInfo.img[
+                                i * imgInfo.actual_width + j];
                 }
             }
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, translation_img,
-              R"(..\resources\4.2\Translation.bmp)", imgInfo.imgSize);
+              R"(..\resources\4.2\Translation.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, translation_img, R"(..\resources\4.2\Translation.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](translation_img);
 }
@@ -566,38 +551,41 @@ void Translation(char *filename, int deltaX, int deltaY) {
 //水平镜像
 void Horizontal_Mirror(char *filename) {
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *mirror_img = new unsigned char[imgInfo.imgSize];
+    auto *mirror_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int time = imgInfo.infoHeader.biBitCount / 8;
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
-            mirror_img[i * width + j] = 0;
+        for (int j = 0; j < imgInfo.actual_width; j++) {
+            mirror_img[i * imgInfo.actual_width + j] = 0;
         }
     }
     if (time == 3) {
         for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
             for (int j = 0; j < imgInfo.infoHeader.biWidth * time; j++) {
                 if (j % 3 == 1)
-                    mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j - 1];
+                    mirror_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width +
+                                                                           imgInfo.infoHeader.biWidth * time - j - 1];
                 else if (j % 3 == 0)
-                    mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j - 3];
+                    mirror_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width +
+                                                                           imgInfo.infoHeader.biWidth * time - j - 3];
                 else
-                    mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j + 1];
+                    mirror_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width +
+                                                                           imgInfo.infoHeader.biWidth * time - j + 1];
             }
         }
     } else if (time == 1) {
         for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
             for (int j = 0; j < imgInfo.infoHeader.biWidth * time; j++) {
-                mirror_img[i * width + j] = imgInfo.img[i * width + imgInfo.infoHeader.biWidth * time - j - time];
+                mirror_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width +
+                                                                       imgInfo.infoHeader.biWidth * time - j - time];
             }
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, mirror_img,
-              R"(..\resources\4.3\Mirror1.bmp)", imgInfo.imgSize);
+              R"(..\resources\4.3\Mirror1.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror1.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](mirror_img);
 }
@@ -605,20 +593,20 @@ void Horizontal_Mirror(char *filename) {
 //垂直镜像
 void Vertical_Mirror(char *filename) {
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *mirror_img = new unsigned char[imgInfo.imgSize];
+    auto *mirror_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int time = imgInfo.infoHeader.biBitCount / 8;
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.infoHeader.biWidth * time; j++) {
-            mirror_img[i * width + j] = imgInfo.img[(imgInfo.infoHeader.biHeight - i - 1) * width + j];
+            mirror_img[i * imgInfo.actual_width + j] = imgInfo.img[
+                    (imgInfo.infoHeader.biHeight - i - 1) * imgInfo.actual_width + j];
         }
     }
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, mirror_img,
-              R"(..\resources\4.3\Mirror2.bmp)", imgInfo.imgSize);
+              R"(..\resources\4.3\Mirror2.bmp)", imgInfo.infoHeader.biSizeImage);
     } else if (imgInfo.infoHeader.biBitCount == 24) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, mirror_img, R"(..\resources\4.3\Mirror2.bmp)",
-              imgInfo.imgSize);
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](mirror_img);
 }
@@ -626,10 +614,8 @@ void Vertical_Mirror(char *filename) {
 //旋转
 void Rotate(char *filename, double angle) {
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-
-    int img_width = ceil(abs(imgInfo.infoHeader.biHeight * sin(angle)) + abs(width * cos(angle)));//新图像宽
-    int img_height = ceil(abs(width * sin(angle)) + abs(imgInfo.infoHeader.biHeight * cos(angle)));//新图像高
+    int img_width = ceil(abs(imgInfo.infoHeader.biHeight * sin(angle)) + abs(imgInfo.actual_width * cos(angle)));//新图像宽
+    int img_height = ceil(abs(imgInfo.actual_width * sin(angle)) + abs(imgInfo.infoHeader.biHeight * cos(angle)));//新图像高
     int new_size = img_width * img_height;
     auto *rotate_img = new unsigned char[new_size];
     for (int i = 0; i < img_height; i++) {
@@ -638,17 +624,17 @@ void Rotate(char *filename, double angle) {
         }
     }
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
             if ((i * cos(angle) - j * sin(angle)) >= 0 && (i * sin(angle) + j * cos(angle)) >= 0 &&
                 imgInfo.infoHeader.biHeight >= (i * cos(angle) - j * sin(angle)) &&
-                width >= (i * sin(angle) + j * cos(angle)))
-                rotate_img[(int) (i * cos(angle) - j * sin(angle)) * width +
+                imgInfo.actual_width >= (i * sin(angle) + j * cos(angle)))
+                rotate_img[(int) (i * cos(angle) - j * sin(angle)) * imgInfo.actual_width +
                            (int) (i * sin(angle) + j * cos(angle))] = imgInfo.img[
-                        i * width + j];
+                        i * imgInfo.actual_width + j];
         }
     }
     write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, rotate_img,
-          R"(..\resources\4.4\Rotate.bmp)", imgInfo.imgSize);
+          R"(..\resources\4.4\Rotate.bmp)", imgInfo.infoHeader.biSizeImage);
     delete[](rotate_img);
 }
 
@@ -656,11 +642,9 @@ void Rotate(char *filename, double angle) {
 void LabeledHistogram(char *filename, const char *target, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     int count[256] = {0};
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    for (int i = 0; i < bmpHeight; i++) {
-        for (int j = 0; j < bmpWidth; j++) {
-            int now = imgInfo.img[i * bmpWidth + j];
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8); j++) {
+            int now = imgInfo.img[i * imgInfo.actual_width + j];
             count[now]++;
         }
     }
@@ -686,7 +670,7 @@ void LabeledHistogram(char *filename, const char *target, int alpha) {
     ih.biPlanes = 1;
     ih.biBitCount = 24;
     ih.biCompression = 0;
-    ih.biSizeImage = fh.bfSize + 10;
+    ih.biSizeImage = ih.biWidth * ih.biHeight * 3;
     ih.biXPelsPerMeter = 4724;
     ih.biYPelsPerMeter = 4724;
     ih.biClrUsed = clrUsed;
@@ -722,23 +706,24 @@ void LabeledHistogram(char *filename, const char *target, int alpha) {
     delete[](show_img);
 }
 
+//图像二值化
+void Binary(const unsigned char *img, unsigned char *temp_img, unsigned long size, int threshold) {
+    for (int i = 0; i < size; i++)
+        temp_img[i] = img[i] >= threshold ? 255 : 0;
+}
+
 //给定阈值分割
 void FixedThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
-    int width = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    auto *temp_img = new unsigned char[imgInfo.imgSize];
-    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < width; j++) {
-            temp_img[i * width + j] = imgInfo.img[i * width + j] >= alpha ? 255 : 0;
-        }
-        if (imgInfo.infoHeader.biBitCount == 8) {
-            write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
-                  R"(..\resources\5.1\FixedThresholdSegmentation.bmp)", imgInfo.imgSize);
-        } else if (imgInfo.infoHeader.biBitCount == 24) {
-            write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
-                  R"(..\resources\5.1\FixedThresholdSegmentation.bmp)",
-                  imgInfo.imgSize);
-        }
+    auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    Binary(imgInfo.img, temp_img, imgInfo.infoHeader.biSizeImage, alpha);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
+              R"(..\resources\5.1\FixedThresholdSegmentation.bmp)", imgInfo.infoHeader.biSizeImage);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
+              R"(..\resources\5.1\FixedThresholdSegmentation.bmp)",
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](temp_img);
     LabeledHistogram(filename, R"(..\resources\5.1\Histogram.bmp)", alpha);
@@ -748,19 +733,19 @@ void FixedThresholdSegmentation(char *filename, int alpha) {
 void IterationThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     int count[256] = {0};
-    int bmpHeight = imgInfo.infoHeader.biHeight;
-    int bmpWidth = imgInfo.imgSize / imgInfo.infoHeader.biHeight;
-    int *copy = (int *) malloc(sizeof(int) * imgInfo.imgSize);
-    for (int i = 0; i < imgInfo.imgSize; i++) {
-        copy[i] = imgInfo.img[i];
+    int sum = imgInfo.infoHeader.biHeight * imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8);
+    int *copy = (int *) malloc(sizeof(int) * sum);
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8); j++)
+            copy[i * imgInfo.infoHeader.biWidth + j] = imgInfo.img[i * imgInfo.infoHeader.biWidth + j];
     }
     //初始阈值
-    int t1 = getMiddle(copy, imgInfo.imgSize);
+    int t1 = getMiddle(copy, sum);
     free(copy);
     //统计灰度计数
-    for (int i = 0; i < bmpHeight; i++) {
-        for (int j = 0; j < bmpWidth; j++) {
-            int now = imgInfo.img[i * bmpWidth + j];
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8); j++) {
+            int now = imgInfo.img[i * imgInfo.actual_width + j];
             count[now]++;
         }
     }
@@ -787,19 +772,15 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
             bingo = true;
         }
     }
-    auto *temp_img = new unsigned char[imgInfo.imgSize];
-    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
-        for (int j = 0; j < bmpWidth; j++) {
-            temp_img[i * bmpWidth + j] = imgInfo.img[i * bmpWidth + j] >= t2 ? 255 : 0;
-        }
-        if (imgInfo.infoHeader.biBitCount == 8) {
-            write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
-                  R"(..\resources\5.2\IterationThresholdSegmentation.bmp)", imgInfo.imgSize);
-        } else if (imgInfo.infoHeader.biBitCount == 24) {
-            write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
-                  R"(..\resources\5.2\IterationThresholdSegmentation.bmp)",
-                  imgInfo.imgSize);
-        }
+    auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    Binary(imgInfo.img, temp_img, imgInfo.infoHeader.biSizeImage, t2);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
+              R"(..\resources\5.2\IterationThresholdSegmentation.bmp)", imgInfo.infoHeader.biSizeImage);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
+              R"(..\resources\5.2\IterationThresholdSegmentation.bmp)",
+              imgInfo.infoHeader.biSizeImage);
     }
     delete[](temp_img);
     LabeledHistogram(filename, R"(..\resources\5.2\Histogram.bmp)", t2);
@@ -808,6 +789,71 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
 
 //otsu
 void otsu(char *filename) {
+    IMGINFO imgInfo = openImg(filename);
+    const int GrayScale = 256;
+    int bmpWidth = imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8);
+    int bmpHeight = imgInfo.infoHeader.biHeight;
+    int count[GrayScale] = {0};
+    float pixelPro[GrayScale] = {0};
+    int i, j, threshold = 0;
+    float sum = (float) imgInfo.infoHeader.biWidth * (float) imgInfo.infoHeader.biHeight *
+                ((float) imgInfo.infoHeader.biBitCount / 8);
+    //统计灰度计数
+    for (i = 0; i < bmpHeight; i++) {
+        for (j = 0; j < bmpWidth; j++) {
+            int now = imgInfo.img[i * bmpWidth + j];
+            count[now]++;
+        }
+    }
+
+    //计算每个像素在整幅图像中的比例
+    float maxPro = 0.0;
+    int kk = 0;
+    for (i = 0; i < GrayScale; i++) {
+        pixelPro[i] = (float) count[i] / sum;
+        if (pixelPro[i] > maxPro) {
+            maxPro = pixelPro[i];
+            kk = i;
+        }
+    }
+
+    //遍历灰度级[0,255]
+    float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
+    for (i = 0; i < GrayScale; i++)     // i作为阈值
+    {
+        w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
+        for (j = 0; j < GrayScale; j++) {
+            if (j <= i)   //背景部分
+            {
+                w0 += pixelPro[j];
+                u0tmp += (float) j * pixelPro[j];
+            } else   //前景部分
+            {
+                w1 += pixelPro[j];
+                u1tmp += (float) j * pixelPro[j];
+            }
+        }
+        u0 = u0tmp / w0;
+        u1 = u1tmp / w1;
+        u = u0tmp + u1tmp;
+        deltaTmp = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2);
+        if (deltaTmp > deltaMax) {
+            deltaMax = deltaTmp;
+            threshold = i;
+        }
+    }
+    auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    Binary(imgInfo.img, temp_img, imgInfo.infoHeader.biSizeImage, threshold);
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
+              R"(..\resources\5.3\otsu.bmp)", imgInfo.infoHeader.biSizeImage);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo.fileHeader, imgInfo.infoHeader, temp_img,
+              R"(..\resources\5.3\otsu.bmp)",
+              imgInfo.infoHeader.biSizeImage);
+    }
+    delete[](temp_img);
+    LabeledHistogram(filename, R"(..\resources\5.3\Histogram.bmp)", threshold);
 
 }
 
