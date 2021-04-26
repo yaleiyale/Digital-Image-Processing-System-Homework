@@ -9,7 +9,9 @@ void menu() {
               << "\n" << "4:绘制直方图" << "\n" << "5:直方图均衡化" << "\n" << "6:平均滤波" << "\n" << "7:中值滤波" << "\n" << "8:缩放"
               << "\n"
               << "9:平移" << "\n" << "10:镜像" << "\n" << "11:旋转" << "\n" << "12:固定阈值分割" << "\n" << "13:迭代阈值分割" << "\n"
-              << "14:OTSU" << "\n";
+              << "14:OTSU" << "\n" << "15:区域生长" << "\n" << "16:分裂合并" << "\n" << "17:Prewitt" << "\n" << "18:Sobel"
+              << "\n" << "19:LOG" << "\n"
+              << "20:直线检测" << "\n" << "21:连通域分析" << "\n" << "22:轮廓提取" << "\n";
 }
 
 int main() {
@@ -112,6 +114,39 @@ int main() {
                 sprintf_s(filename, R"(..\resources\5.3\test%d%d.bmp)", choice / 10, choice % 10);
                 otsu(filename);
                 system("explorer ..\\resources\\5.3");
+                break;
+            case 15:
+                RegionGrowth();
+                system("explorer ..\\resources\\6.1");
+                break;
+            case 16:
+                Merge();
+                system("explorer ..\\resources\\6.2");
+                break;
+            case 17:
+                std::cout << "输入阈值" << "\n";
+                std::cin >> alpha;
+                sprintf_s(filename, R"(..\resources\7.1\test%d%d.bmp)", choice / 10, choice % 10);
+                Prewitt(filename, alpha);
+                system("explorer ..\\resources\\7.1");
+                break;
+            case 18:
+                Sobel();
+                system("explorer ..\\resources\\7.2");
+                break;
+            case 19:
+                Log();
+                system("explorer ..\\resources\\7.3");
+                break;
+            case 20:
+                Hough();
+                system("explorer ..\\resources\\8.1");
+                break;
+            case 21:
+                system("explorer ..\\resources\\9.1");
+                break;
+            case 22:
+                system("explorer ..\\resources\\9.2");
                 break;
             case -1:
                 return 0;

@@ -390,7 +390,7 @@ void MedianFiltering(char *filename, int windows_size) {
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
+                j >= (imgInfo.infoHeader.biWidth - 1) * step) {
                 show_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
             } else {
                 int k = 0;
@@ -415,7 +415,7 @@ void MedianFiltering(char *filename, int windows_size) {
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
-                j >= (imgInfo.infoHeader.biWidth - 1) * (imgInfo.infoHeader.biBitCount / 8)) {
+                j >= (imgInfo.infoHeader.biWidth - 1) * step) {
                 int x, y;
                 int k = 0;
                 for (int width_pointer = -depth; width_pointer <= depth; width_pointer++) {
@@ -773,6 +773,7 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
     }
     auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     Binary(imgInfo.img, temp_img, imgInfo.infoHeader.biSizeImage, t2);
+    std::cout << t2;
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
               R"(..\resources\5.2\IterationThresholdSegmentation.bmp)", imgInfo.infoHeader.biSizeImage);
@@ -839,6 +840,7 @@ void otsu(char *filename) {
     }
     auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     Binary(imgInfo.img, temp_img, imgInfo.infoHeader.biSizeImage, threshold);
+    std::cout << threshold;
     if (imgInfo.infoHeader.biBitCount == 8) {
         write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img,
               R"(..\resources\5.3\otsu.bmp)", imgInfo.infoHeader.biSizeImage);
@@ -849,6 +851,81 @@ void otsu(char *filename) {
     }
     delete[](temp_img);
     LabeledHistogram(filename, R"(..\resources\5.3\Histogram.bmp)", threshold);
+
+}
+
+void RegionGrowth() {
+
+}
+
+void Merge() {
+
+}
+
+void Prewitt(char *filename, int alpha) {
+    int depth = 3 / 2;
+    IMGINFO imgInfo = openImg(filename);
+    auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    int step = imgInfo.infoHeader.biBitCount / 8;
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.actual_width; j++) {
+            if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth || j <= depth - 1 ||
+                j >= (imgInfo.infoHeader.biWidth - 1) * step) {
+                show_img[i * imgInfo.actual_width + j] = imgInfo.img[i * imgInfo.actual_width + j];
+            } else {
+                int tempX, tempY;
+                tempX = -imgInfo.img[(i + depth) * imgInfo.actual_width + j - (step * depth)]
+                        - imgInfo.img[(i + depth) * imgInfo.actual_width + j]
+                        - imgInfo.img[(i + depth) * imgInfo.actual_width + j + (step * depth)]
+                        + imgInfo.img[(i - depth) * imgInfo.actual_width + j - (step * depth)]
+                        + imgInfo.img[(i - depth) * imgInfo.actual_width + j]
+                        + imgInfo.img[(i - depth) * imgInfo.actual_width + j + (step * depth)];
+
+                tempY = -imgInfo.img[(i + depth) * imgInfo.actual_width + j - (step * depth)]
+                        - imgInfo.img[(i) * imgInfo.actual_width + j - (step * depth)]
+                        - imgInfo.img[(i - depth) * imgInfo.actual_width + j - (step * depth)]
+                        + imgInfo.img[(i - depth) * imgInfo.actual_width + j + (step * depth)]
+                        + imgInfo.img[(i) * imgInfo.actual_width + j + (step * depth)]
+                        + imgInfo.img[(i + depth) * imgInfo.actual_width + j + (step * depth)];
+
+                show_img[i * imgInfo.actual_width + j] = (sqrt(tempX * tempX + tempY * tempY) > alpha) ? 0 : 255;
+
+            }
+        }
+    }
+    if (imgInfo.infoHeader.biBitCount == 8) {
+        write(imgInfo
+                      .fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
+              R"(..\resources\7.1\Prewitt.bmp)", imgInfo.infoHeader.biSizeImage);
+    } else if (imgInfo.infoHeader.biBitCount == 24) {
+        write(imgInfo
+                      .fileHeader, imgInfo.infoHeader, show_img, R"(..\resources\7.1\Prewitt.bmp)",
+              imgInfo.infoHeader.biSizeImage);
+    }
+    delete[](show_img);
+}
+
+void Sobel() {
+
+}
+
+void Log() {
+
+}
+
+
+void Hough(char *filename) {
+    IMGINFO imginfo = openImg(filename);
+    int **count = (int **) malloc(
+            sizeof(int) * sqrt(pow(imginfo.infoHeader.biWidth, 2) + pow(imginfo.infoHeader.biHeight, 2)) * 180);
+
+}
+
+void RegionMark() {
+
+}
+
+void ContourTrack() {
 
 }
 
