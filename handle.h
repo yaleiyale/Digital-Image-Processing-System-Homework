@@ -1,7 +1,10 @@
 #ifndef DIP_HANDLE_H
 #define DIP_HANDLE_H
 #define  PI  acos(-1.0)
-
+typedef struct {
+    int x;
+    int y;
+} seed;
 #include <stack>
 #include "openimg.h"
 #include "writeimg.h"
@@ -949,11 +952,8 @@ void RegionGrowth(char *filename, int T,int cut) {
     int width = imgInfo.infoHeader.biWidth;
     int height = imgInfo.infoHeader.biHeight;
 
-    typedef struct {
-        int x;
-        int y;
-    } seed;
     std::stack<seed> seeds;
+    //create seeds
     for (int i = 0; i < height; i++) {
         for (int j = 0;j < width;j++) {
             if(imgInfo.img[i*imgInfo.actual_width+j]>=cut)
@@ -1278,10 +1278,57 @@ void Hough(char *filename, int alpha) {
 
 //区域标记
 void RegionMark(char *filename) {
+    IMGINFO imgInfo = openImg(filename);
+    int width = imgInfo.infoHeader.biWidth;
+    int height = imgInfo.infoHeader.biHeight;
+    auto temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    memset(temp_img, 0, sizeof(unsigned char) * imgInfo.infoHeader.biSizeImage);
+    int tag = 1;
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth; j++) {
+            if(temp_img[i*imgInfo.actual_width+j]==0)
+            {
+                temp_img[i*imgInfo.actual_width+j]=tag;
+                std::stack<seed> seeds;
+                seed start;
+                start.x = j,start.y =i;
+                seeds.push(start);
+                while (!seeds.empty()) {
+                    seed now_seed = seeds.top();
+                    seeds.pop();
+                    for (int p = -1; p < 2; p++) {
+                        for (int q = -1; q < 2; q++) {
+                            int watching_x = now_seed.x + p;
+                            int watching_y = now_seed.y + q;
+                            if (watching_x < 0 || watching_y < 0 || watching_x >= width || watching_y >= height)
+                                continue;
+                            if (temp_img[watching_y * imgInfo.actual_width + watching_x] == 0 &&imgInfo.img[watching_y * imgInfo.actual_width + watching_x] == imgInfo.img[now_seed.y * imgInfo.actual_width + now_seed.x])
+                            {
+                                temp_img[watching_y * imgInfo.actual_width + watching_x] = tag;
+                                seed new_seed;
+                                new_seed.x = watching_x;
+                                new_seed.y = watching_y;
+                                seeds.push(new_seed);
+                            }
+                        }
+                    }
+                }
+                if(tag<255)
+                {
+                    tag+=2;
+                    std::cout<<tag<<"\n";
+                }
 
+            }
+        }
+        }
+    write(imgInfo.fileHeader,imgInfo.infoHeader,imgInfo.pRGB,temp_img,R"(..\resources\9.1\RegionMark.bmp)",imgInfo.infoHeader.biSizeImage);
+    delete[](temp_img);
 }
 
 //轮廓提取
-void ContourTrack(char *filename) {}
+void ContourTrack(char *filename) {
+
+}
 
 #endif // DIP_HANDLE_H
