@@ -1,5 +1,6 @@
 #ifndef DIP_HANDLE_H
 #define DIP_HANDLE_H
+#define  PI  acos(-1.0)
 
 #include "openimg.h"
 #include "writeimg.h"
@@ -870,7 +871,7 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
     LabeledHistogram(filename, R"(..\resources\5.2\Histogram.bmp)", t2);
 }
 
-// otsu
+// 大津法
 void otsu(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     const int GrayScale = 256;
@@ -939,8 +940,10 @@ void otsu(char *filename) {
     LabeledHistogram(filename, R"(..\resources\5.3\Histogram.bmp)", threshold);
 }
 
+//区域生长
 void RegionGrowth() {}
 
+//分裂合并
 void Merge() {}
 
 void Prewitt(char *filename, int alpha) {
@@ -1096,16 +1099,139 @@ void Log(char *filename, int alpha) {
     delete[](show_img);
 }
 
-void Hough(char *filename) {
-    IMGINFO imginfo = openImg(filename);
-    int **count = (int **) malloc(sizeof(int) *
-                                  sqrt(pow(imginfo.infoHeader.biWidth, 2) +
-                                       pow(imginfo.infoHeader.biHeight, 2)) *
-                                  180);
+//直线检测
+void Hough(char *filename, int alpha) {
+    IMGINFO imgInfo = openImg(filename);
+    int luo = (int) (sqrt(pow(imgInfo.infoHeader.biWidth, 2) +
+                          pow(imgInfo.infoHeader.biHeight, 2)) + 1);
+    //直线数组
+    int **count = (int **) malloc(sizeof(int *) * luo);
+    for (int i = 0; i < luo; i++) {
+        count[i] = (int *) malloc(sizeof(int) * 180);
+    }
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            count[i][j] = 0;
+        }
+    }
+
+    int **startX = (int **) malloc(sizeof(int *) * luo);
+    for (int i = 0; i < luo; i++) {
+        startX[i] = (int *) malloc(sizeof(int) * 180);
+    }
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            startX[i][j] = 0;
+        }
+    }
+    int start_flag = 0;
+
+    int **endX = (int **) malloc(sizeof(int *) * luo);
+    for (int i = 0; i < luo; i++) {
+        endX[i] = (int *) malloc(sizeof(int) * 180);
+    }
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            endX[i][j] = 0;
+        }
+    }
+
+    int **startY = (int **) malloc(sizeof(int *) * luo);
+    for (int i = 0; i < luo; i++) {
+        startY[i] = (int *) malloc(sizeof(int) * 180);
+    }
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            startY[i][j] = 0;
+        }
+    }
+
+    int **endY = (int **) malloc(sizeof(int *) * luo);
+    for (int i = 0; i < luo; i++) {
+        endY[i] = (int *) malloc(sizeof(int) * 180);
+    }
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            endY[i][j] = 0;
+        }
+    }
+
+    //直线上的点计数
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            start_flag = 0;
+            double angle = j * PI / 180;
+            for (int x = 0; x < imgInfo.infoHeader.biWidth; x++) {
+                for (int y = 0; y < imgInfo.infoHeader.biHeight; y++) {
+                    if (i == (int) (x * cos(angle) + y * sin(angle)) &&
+                        imgInfo.img[y * imgInfo.actual_width + x] == 0) {
+                        if (start_flag == 0) {
+                            startX[i][j] = x;
+                            startY[i][j] = y;
+                            start_flag = 1;
+                        }
+                        endX[i][j] = x;
+                        endY[i][j] = y;
+                        count[i][j]++;
+                    }
+                }
+            }
+        }
+    }
+    //确定端点
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j++) {
+            if (startX[i][j] > endX[i][j]) {
+                int tempX = startX[i][j];
+                startX[i][j] = endX[i][j];
+                endX[i][j] = tempX;
+            }
+            if (startY[i][j] > endY[i][j]) {
+                int tempY = startY[i][j];
+                startY[i][j] = endY[i][j];
+                endY[i][j] = tempY;
+            }
+        }
+    }
+//清空
+    for (int x = 0; x < imgInfo.actual_width; x++) {
+        for (int y = 0; y < imgInfo.infoHeader.biHeight; y++) {
+            imgInfo.img[y*imgInfo.actual_width+x] = 255;
+        }
+        }
+
+    for (int i = 0; i < luo; i++) {
+        for (int j = 0; j < 180; j += 5) {
+            if (count[i][j] > alpha) {
+                for (int x = 0; x < imgInfo.infoHeader.biWidth; x++) {
+                    if (endX[i][j] >= x && startX[i][j] <= x) {
+                        double angle = j * PI / 180;
+                        if (angle != 0) {
+                            double rect_y = (i - x * cos(angle)) / sin(angle);
+
+                                imgInfo.img[(int) rect_y * imgInfo.actual_width + x] = 0;
+                        }
+                        if (j == 0) {
+                            for (int climb = startY[i][j]; climb < endY[i][j]; climb++) {
+                                imgInfo.img[climb * imgInfo.actual_width + i] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, imgInfo.img,
+          R"(..\resources\8.1\hough.bmp)",
+          imgInfo.infoHeader.biSizeImage);
 }
 
-void RegionMark() {}
 
-void ContourTrack() {}
+//区域标记
+void RegionMark(char *filename) {}
+
+//轮廓提取
+void ContourTrack(char *filename) {}
 
 #endif // DIP_HANDLE_H
