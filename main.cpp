@@ -131,15 +131,21 @@ int main() {
                 system("explorer ..\\resources\\7.1");
                 break;
             case 18:
-                Sobel();
+                std::cout << "输入阈值" << "\n";
+                std::cin >> alpha;
+                sprintf_s(filename, R"(..\resources\7.2\test%d%d.bmp)", choice / 10, choice % 10);
+                Sobel(filename, alpha);
                 system("explorer ..\\resources\\7.2");
                 break;
             case 19:
-                Log();
+                std::cout << "输入阈值" << "\n";
+                std::cin >> alpha;
+                sprintf_s(filename, R"(..\resources\7.3\test%d%d.bmp)", choice / 10, choice % 10);
+                Log(filename,alpha);
                 system("explorer ..\\resources\\7.3");
                 break;
             case 20:
-                Hough();
+                // Hough();
                 system("explorer ..\\resources\\8.1");
                 break;
             case 21:
