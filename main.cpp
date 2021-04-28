@@ -18,6 +18,7 @@ int main() {
 
     int choice;
     int alpha;
+    int cut;
     int deltaX, deltaY;
     float scaleX, scaleY;
     double angle;
@@ -116,7 +117,12 @@ int main() {
                 system("explorer ..\\resources\\5.3");
                 break;
             case 15:
-                RegionGrowth();
+                std::cout << "输入生长准则阈值T" << "\n";
+                std::cin >> alpha;
+                std::cout << "输入分界值以产生种子" << "\n";
+                std::cin >> cut;
+                sprintf_s(filename, R"(..\resources\6.1\test%d%d.bmp)", choice / 10, choice % 10);
+                RegionGrowth(filename,alpha,cut);
                 system("explorer ..\\resources\\6.1");
                 break;
             case 16:

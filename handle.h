@@ -2,6 +2,7 @@
 #define DIP_HANDLE_H
 #define  PI  acos(-1.0)
 
+#include <stack>
 #include "openimg.h"
 #include "writeimg.h"
 
@@ -941,7 +942,55 @@ void otsu(char *filename) {
 }
 
 //区域生长
-void RegionGrowth() {}
+void RegionGrowth(char *filename, int T,int cut) {
+    IMGINFO imgInfo = openImg(filename);
+    auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    memset(temp_img, 0, sizeof(unsigned char) * imgInfo.infoHeader.biSizeImage);
+    int width = imgInfo.infoHeader.biWidth;
+    int height = imgInfo.infoHeader.biHeight;
+
+    typedef struct {
+        int x;
+        int y;
+    } seed;
+    std::stack<seed> seeds;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0;j < width;j++) {
+            if(imgInfo.img[i*imgInfo.actual_width+j]>=cut)
+            {
+                seed origin_seed;
+                origin_seed.x = j;
+                origin_seed.y = i;
+                seeds.push(origin_seed);
+                temp_img[i*imgInfo.actual_width+j] = 255;
+            }
+        }
+    }
+    while (!seeds.empty()) {
+        seed now_seed = seeds.top();
+        seeds.pop();
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                int watching_x = now_seed.x + i;
+                int watching_y = now_seed.y + j;
+                if (watching_x < 0 || watching_y < 0 || watching_x >= width || watching_y >= height)
+                    continue;
+                if (temp_img[watching_y * imgInfo.actual_width + watching_x] == 0 &&
+                    abs(imgInfo.img[watching_y * imgInfo.actual_width + watching_x] -
+                        imgInfo.img[now_seed.y * imgInfo.actual_width + now_seed.x]) <= T) {
+                    temp_img[watching_y * imgInfo.actual_width + watching_x] = 255;
+                    seed new_seed;
+                    new_seed.x = watching_x;
+                    new_seed.y = watching_y;
+                    seeds.push(new_seed);
+                }
+            }
+        }
+    }
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img, R"(..\resources\6.1\RegionGrowth.bmp)",
+          imgInfo.infoHeader.biSizeImage);
+    delete[](temp_img);
+}
 
 //分裂合并
 void Merge() {}
@@ -1196,9 +1245,9 @@ void Hough(char *filename, int alpha) {
 //清空
     for (int x = 0; x < imgInfo.actual_width; x++) {
         for (int y = 0; y < imgInfo.infoHeader.biHeight; y++) {
-            imgInfo.img[y*imgInfo.actual_width+x] = 255;
+            imgInfo.img[y * imgInfo.actual_width + x] = 255;
         }
-        }
+    }
 
     for (int i = 0; i < luo; i++) {
         for (int j = 0; j < 180; j += 5) {
@@ -1209,7 +1258,7 @@ void Hough(char *filename, int alpha) {
                         if (angle != 0) {
                             double rect_y = (i - x * cos(angle)) / sin(angle);
 
-                                imgInfo.img[(int) rect_y * imgInfo.actual_width + x] = 0;
+                            imgInfo.img[(int) rect_y * imgInfo.actual_width + x] = 0;
                         }
                         if (j == 0) {
                             for (int climb = startY[i][j]; climb < endY[i][j]; climb++) {
@@ -1227,9 +1276,10 @@ void Hough(char *filename, int alpha) {
           imgInfo.infoHeader.biSizeImage);
 }
 
-
 //区域标记
-void RegionMark(char *filename) {}
+void RegionMark(char *filename) {
+
+}
 
 //轮廓提取
 void ContourTrack(char *filename) {}
