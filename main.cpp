@@ -11,7 +11,7 @@ void menu() {
               << "9:平移" << "\n" << "10:镜像" << "\n" << "11:旋转" << "\n" << "12:固定阈值分割" << "\n" << "13:迭代阈值分割" << "\n"
               << "14:大津法" << "\n" << "15:区域生长" << "\n" << "16:分裂合并" << "\n" << "17:Prewitt" << "\n" << "18:Sobel"
               << "\n" << "19:LOG" << "\n"
-              << "20:直线检测" << "\n" << "21:连通域分析" << "\n" << "22:轮廓提取" << "\n";
+              << "20:直线检测" << "\n" << "21:连通域分析" << "\n" << "22:轮廓提取" << "\n"<<"23:批处理"<<"\n";
 }
 
 int main() {
@@ -166,6 +166,67 @@ int main() {
                 sprintf_s(filename, R"(..\resources\9.2\test%d%d.bmp)", choice / 10, choice % 10);
                 ContourTrack(filename);
                 system("explorer ..\\resources\\9.2");
+                break;
+            case 23:
+                sprintf_s(filename, R"(..\resources\1.1\test%d%d.bmp)", 0, 1);
+                ColorSeparation(filename);//分色
+                sprintf_s(filename, R"(..\resources\1.2\test%d%d.bmp)",0,2);
+                Grayscale(filename);//灰度化
+                sprintf_s(filename, R"(..\resources\1.3\test%d%d.bmp)", 0,3);
+                Invert(filename);//反色
+                sprintf_s(filename, R"(..\resources\2.1\test%d%d.bmp)", 0,4);
+                Histogram(filename);//直方图
+                sprintf_s(filename, R"(..\resources\2.2\test%d%d.bmp)", 0,5);
+                Equalization(filename);//直方图均衡化
+                sprintf_s(filename, R"(..\resources\3.1\test%d%d.bmp)", 0,6);
+                alpha = 5;
+                AverageTreatment(filename, alpha);//平均处理
+                sprintf_s(filename, R"(..\resources\3.2\test%d%d.bmp)", 0,7);
+                alpha = 5;
+                MedianFiltering(filename, alpha);//中值滤波
+                sprintf_s(filename, R"(..\resources\4.1\test%d%d.bmp)", 0,8);
+                scaleX = 0.5,scaleY=2;
+                Scale(filename, scaleX, scaleY);//缩放
+                sprintf_s(filename, R"(..\resources\4.2\test%d%d.bmp)", 0,9);
+                deltaX = 20,deltaY = -30;
+                Translation(filename, deltaX, deltaY);//平移
+                sprintf_s(filename, R"(..\resources\4.3\test%d%d.bmp)", 1,0);
+                Horizontal_Mirror(filename);//竖直镜像
+                sprintf_s(filename, R"(..\resources\4.3\test%d%d.bmp)", 1,0);
+                Vertical_Mirror(filename);//水平镜像
+                sprintf_s(filename, R"(..\resources\4.4\test%d%d.bmp)", 1,1);
+                angle = 30;
+                Rotate(filename, angle * PI / 180);//旋转
+                sprintf_s(filename, R"(..\resources\5.1\test%d%d.bmp)", 1,2);
+                alpha = 100;
+                FixedThresholdSegmentation(filename, alpha);//固定阈值分割
+                sprintf_s(filename, R"(..\resources\5.2\test%d%d.bmp)", 1,3);
+                alpha = 2;
+                IterationThresholdSegmentation(filename, alpha);//迭代阈值分割
+                sprintf_s(filename, R"(..\resources\5.3\test%d%d.bmp)", 1,4);
+                otsu(filename);//大津法
+                sprintf_s(filename, R"(..\resources\6.1\test%d%d.bmp)", 1,5);
+                alpha = 5,cut = 120;
+                RegionGrowth(filename,alpha,cut);//区域生长
+                sprintf_s(filename, R"(..\resources\6.2\test%d%d.bmp)", 1,6);
+                Merge();//分裂合并
+                sprintf_s(filename, R"(..\resources\7.1\test%d%d.bmp)", 1,7);
+                alpha = 120;
+                Prewitt(filename, alpha);
+                sprintf_s(filename, R"(..\resources\7.2\test%d%d.bmp)", 1,8);
+                alpha = 120;
+                Sobel(filename, alpha);
+                sprintf_s(filename, R"(..\resources\7.3\test%d%d.bmp)", 1,9);
+                alpha = 120;
+                Log(filename, alpha);
+                sprintf_s(filename, R"(..\resources\8.1\test%d%d.bmp)", 2,0);
+                alpha = 40;
+                Hough(filename, alpha);//直线检测
+                sprintf_s(filename, R"(..\resources\9.1\test%d%d.bmp)", 2,1);
+                RegionMark(filename);//区域标记
+                sprintf_s(filename, R"(..\resources\9.2\test%d%d.bmp)", 2,2);
+                ContourTrack(filename);
+                system("explorer ..\\resources");
                 break;
             case -1:
                 return 0;

@@ -966,6 +966,8 @@ void RegionGrowth(char *filename, int T,int cut) {
             }
         }
     }
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img, R"(..\resources\6.1\seed.bmp)",
+          imgInfo.infoHeader.biSizeImage);
     while (!seeds.empty()) {
         seed now_seed = seeds.top();
         seeds.pop();
@@ -1250,13 +1252,13 @@ void Hough(char *filename, int alpha) {
     }
 
     for (int i = 0; i < luo; i++) {
-        for (int j = 0; j < 180; j += 5) {
+        for (int j = 0; j < 180; j +=5) {
             if (count[i][j] > alpha) {
                 for (int x = 0; x < imgInfo.infoHeader.biWidth; x++) {
                     if (endX[i][j] >= x && startX[i][j] <= x) {
                         double angle = j * PI / 180;
                         if (angle != 0) {
-                            double rect_y = (i - x * cos(angle)) / sin(angle);
+                            double rect_y =( (i - x * cos(angle)) / sin(angle)+0.5)/2*2;
 
                             imgInfo.img[(int) rect_y * imgInfo.actual_width + x] = 0;
                         }
@@ -1283,7 +1285,7 @@ void RegionMark(char *filename) {
     int height = imgInfo.infoHeader.biHeight;
     auto temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     memset(temp_img, 0, sizeof(unsigned char) * imgInfo.infoHeader.biSizeImage);
-    int tag = 1;
+    int tag = 15;
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.infoHeader.biWidth; j++) {
             if(temp_img[i*imgInfo.actual_width+j]==0)
@@ -1315,7 +1317,7 @@ void RegionMark(char *filename) {
                 }
                 if(tag<255)
                 {
-                    tag+=2;
+                    tag+=30;
                     std::cout<<tag<<"\n";
                 }
 
@@ -1328,7 +1330,26 @@ void RegionMark(char *filename) {
 
 //ÂÖÀªÌáÈ¡
 void ContourTrack(char *filename) {
-
+    IMGINFO imgInfo = openImg(filename);
+    auto temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    memset(temp_img,255,sizeof (unsigned  char)*imgInfo.infoHeader.biSizeImage);
+    for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
+        for (int j = 0; j < imgInfo.infoHeader.biWidth; j++) {
+            if (imgInfo.img[i*imgInfo.actual_width+j] == 255) continue;
+            bool isInside = true;
+            for (int m = -1; m <= 1; m++) {
+               for (int n = -1; n <= 1; n++) {
+                   int ni = i + m, nj = j + n;
+                   if ((ni == i && nj == j) || ni < 0 || ni >= imgInfo.infoHeader.biHeight || nj < 0 || nj >= imgInfo.infoHeader.biWidth) continue;
+                   if (imgInfo.img[ni*imgInfo.actual_width+nj]==255)
+                       isInside = false;
+               }
+           }
+            if (!isInside) temp_img[i*imgInfo.actual_width+j] =0;
+        }
+    }
+    write(imgInfo.fileHeader,imgInfo.infoHeader,imgInfo.pRGB,temp_img,R"(..\resources\9.2\ContourTrack.bmp)",imgInfo.infoHeader.biSizeImage);
 }
+
 
 #endif // DIP_HANDLE_H
