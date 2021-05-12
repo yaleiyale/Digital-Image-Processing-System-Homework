@@ -126,7 +126,10 @@ int main() {
                 system("explorer ..\\resources\\6.1");
                 break;
             case 16:
-                Merge();
+                std::cout << "输入生长准则阈值T" << "\n";
+                std::cin >> alpha;
+                sprintf_s(filename, R"(..\resources\6.2\test%d%d.bmp)", choice / 10, choice % 10);
+                Merge(filename,alpha);
                 system("explorer ..\\resources\\6.2");
                 break;
             case 17:
@@ -209,7 +212,7 @@ int main() {
                 alpha = 5,cut = 120;
                 RegionGrowth(filename,alpha,cut);//区域生长
                 sprintf_s(filename, R"(..\resources\6.2\test%d%d.bmp)", 1,6);
-                Merge();//分裂合并
+                Merge(filename,alpha);//分裂合并
                 sprintf_s(filename, R"(..\resources\7.1\test%d%d.bmp)", 1,7);
                 alpha = 120;
                 Prewitt(filename, alpha);
@@ -220,7 +223,7 @@ int main() {
                 alpha = 120;
                 Log(filename, alpha);
                 sprintf_s(filename, R"(..\resources\8.1\test%d%d.bmp)", 2,0);
-                alpha = 40;
+                alpha = 80;
                 Hough(filename, alpha);//直线检测
                 sprintf_s(filename, R"(..\resources\9.1\test%d%d.bmp)", 2,1);
                 RegionMark(filename);//区域标记

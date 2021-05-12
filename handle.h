@@ -1,10 +1,12 @@
 #ifndef DIP_HANDLE_H
 #define DIP_HANDLE_H
 #define  PI  acos(-1.0)
+
 typedef struct {
     int x;
     int y;
 } seed;
+
 #include <stack>
 #include "openimg.h"
 #include "writeimg.h"
@@ -945,7 +947,7 @@ void otsu(char *filename) {
 }
 
 //区域生长
-void RegionGrowth(char *filename, int T,int cut) {
+void RegionGrowth(char *filename, int T, int cut) {
     IMGINFO imgInfo = openImg(filename);
     auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     memset(temp_img, 0, sizeof(unsigned char) * imgInfo.infoHeader.biSizeImage);
@@ -955,14 +957,13 @@ void RegionGrowth(char *filename, int T,int cut) {
     std::stack<seed> seeds;
     //create seeds
     for (int i = 0; i < height; i++) {
-        for (int j = 0;j < width;j++) {
-            if(imgInfo.img[i*imgInfo.actual_width+j]>=cut)
-            {
+        for (int j = 0; j < width; j++) {
+            if (imgInfo.img[i * imgInfo.actual_width + j] >= cut) {
                 seed origin_seed;
                 origin_seed.x = j;
                 origin_seed.y = i;
                 seeds.push(origin_seed);
-                temp_img[i*imgInfo.actual_width+j] = 255;
+                temp_img[i * imgInfo.actual_width + j] = 255;
             }
         }
     }
@@ -994,8 +995,84 @@ void RegionGrowth(char *filename, int T,int cut) {
     delete[](temp_img);
 }
 
+typedef struct QuadTree {
+    int width;
+    int height;
+    int pointX;
+    int pointY;
+    struct QuadTree *UL, *UR, *LL, *LR;
+} Node;
+
+bool judge(IMGINFO imgInfo, Node *n, int alpha) {
+    if (n->width == 1 || n->height == 1 || n->width == 0 || n->height == 0)
+        return false;
+    int sum_grayscale = 0, average_grayscale;
+    double variance = 0;
+    for (int i = n->pointY; i < n->pointY + n->height; i++) {
+        for (int j = n->pointX; i < n->pointX + n->width; j++) {
+            sum_grayscale += imgInfo.img[i * imgInfo.actual_width + j];
+        }
+    }
+    int sum_count = n->width * n->height;
+    average_grayscale = sum_grayscale / sum_count;
+    for (int i = n->pointY; i < n->pointY + n->height; i++) {
+        for (int j = n->pointX; i < n->pointX + n->width; j++) {
+            variance += pow(imgInfo.img[i * imgInfo.actual_width + j] - average_grayscale, 2);
+        }
+    }
+    variance = variance / sum_count;
+    if (variance < alpha)
+        return false;
+    else return true;
+}
+
 //分裂合并
-void Merge() {}
+void Merge(char *filename, int alpha) {
+    auto imgInfo = openImg(filename);
+    Node *origin = nullptr;
+    origin->width = imgInfo.infoHeader.biWidth;
+    origin->height = imgInfo.infoHeader.biHeight;
+    origin->pointX = 0;
+    origin->pointY = 0;
+    std::stack<Node *> nodes;
+    nodes.push(origin);
+    int k = 0;
+    while (!nodes.empty()) {
+        origin = nodes.top();
+        nodes.pop();
+        if (judge(imgInfo, origin, alpha)) {
+            Node *ul = nullptr;
+            ul->pointX = origin->pointX;
+            ul->pointY = origin->pointY + origin->height / 2;
+            ul->width = origin->width / 2;
+            ul->height = origin->height / 2;
+            nodes.push(ul);
+            Node *ur = nullptr;
+            ur->pointX = origin->pointX + origin->width / 2;
+            ur->pointY = origin->pointY + origin->height / 2;
+            ur->width = origin->width / 2;
+            ur->height = origin->height / 2;
+            nodes.push(ur);
+            Node *ll = nullptr;
+            ll->pointX = origin->pointX;
+            ll->pointY = origin->pointY;
+            ll->width = origin->width / 2;
+            ll->height = origin->height / 2;
+            nodes.push(ll);
+            Node *lr = nullptr;
+            lr->pointX = origin->pointX + origin->width / 2;
+            lr->pointY = origin->pointY;
+            lr->width = origin->width / 2;
+            lr->height = origin->height / 2;
+            nodes.push(lr);
+            origin->UL = ul;
+            origin->UR = ur;
+            origin->LL = ll;
+            origin->LR = lr;
+            k++;
+        }
+    }
+}
 
 void Prewitt(char *filename, int alpha) {
     int depth = 3 / 2;
@@ -1244,27 +1321,28 @@ void Hough(char *filename, int alpha) {
             }
         }
     }
-//清空
+
+//绘制
+    auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
+    //清空
     for (int x = 0; x < imgInfo.actual_width; x++) {
         for (int y = 0; y < imgInfo.infoHeader.biHeight; y++) {
-            imgInfo.img[y * imgInfo.actual_width + x] = 255;
+            show_img[y * imgInfo.actual_width + x] = 255;
         }
     }
-
     for (int i = 0; i < luo; i++) {
-        for (int j = 0; j < 180; j +=5) {
+        for (int j = 0; j < 180; j+=5) {
             if (count[i][j] > alpha) {
                 for (int x = 0; x < imgInfo.infoHeader.biWidth; x++) {
                     if (endX[i][j] >= x && startX[i][j] <= x) {
                         double angle = j * PI / 180;
                         if (angle != 0) {
-                            double rect_y =( (i - x * cos(angle)) / sin(angle)+0.5)/2*2;
-
-                            imgInfo.img[(int) rect_y * imgInfo.actual_width + x] = 0;
+                            double rect_y = ((i - x * cos(angle)) / sin(angle) + 0.5) / 2 * 2;
+                            show_img[(int) rect_y * imgInfo.actual_width + x] = 0;
                         }
                         if (j == 0) {
                             for (int climb = startY[i][j]; climb < endY[i][j]; climb++) {
-                                imgInfo.img[climb * imgInfo.actual_width + i] = 0;
+                                show_img[climb * imgInfo.actual_width + i] = 0;
                             }
                         }
                     }
@@ -1273,9 +1351,10 @@ void Hough(char *filename, int alpha) {
         }
     }
 
-    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, imgInfo.img,
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
           R"(..\resources\8.1\hough.bmp)",
           imgInfo.infoHeader.biSizeImage);
+    delete[](show_img);
 }
 
 //区域标记
@@ -1288,12 +1367,11 @@ void RegionMark(char *filename) {
     int tag = 15;
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.infoHeader.biWidth; j++) {
-            if(temp_img[i*imgInfo.actual_width+j]==0)
-            {
-                temp_img[i*imgInfo.actual_width+j]=tag;
+            if (temp_img[i * imgInfo.actual_width + j] == 0) {
+                temp_img[i * imgInfo.actual_width + j] = tag;
                 std::stack<seed> seeds;
                 seed start;
-                start.x = j,start.y =i;
+                start.x = j, start.y = i;
                 seeds.push(start);
                 while (!seeds.empty()) {
                     seed now_seed = seeds.top();
@@ -1304,8 +1382,9 @@ void RegionMark(char *filename) {
                             int watching_y = now_seed.y + q;
                             if (watching_x < 0 || watching_y < 0 || watching_x >= width || watching_y >= height)
                                 continue;
-                            if (temp_img[watching_y * imgInfo.actual_width + watching_x] == 0 &&imgInfo.img[watching_y * imgInfo.actual_width + watching_x] == imgInfo.img[now_seed.y * imgInfo.actual_width + now_seed.x])
-                            {
+                            if (temp_img[watching_y * imgInfo.actual_width + watching_x] == 0 &&
+                                imgInfo.img[watching_y * imgInfo.actual_width + watching_x] ==
+                                imgInfo.img[now_seed.y * imgInfo.actual_width + now_seed.x]) {
                                 temp_img[watching_y * imgInfo.actual_width + watching_x] = tag;
                                 seed new_seed;
                                 new_seed.x = watching_x;
@@ -1315,16 +1394,16 @@ void RegionMark(char *filename) {
                         }
                     }
                 }
-                if(tag<255)
-                {
-                    tag+=30;
-                    std::cout<<tag<<"\n";
+                if (tag < 255) {
+                    tag += 30;
+                    std::cout << tag << "\n";
                 }
 
             }
         }
-        }
-    write(imgInfo.fileHeader,imgInfo.infoHeader,imgInfo.pRGB,temp_img,R"(..\resources\9.1\RegionMark.bmp)",imgInfo.infoHeader.biSizeImage);
+    }
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img, R"(..\resources\9.1\RegionMark.bmp)",
+          imgInfo.infoHeader.biSizeImage);
     delete[](temp_img);
 }
 
@@ -1332,23 +1411,26 @@ void RegionMark(char *filename) {
 void ContourTrack(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     auto temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
-    memset(temp_img,255,sizeof (unsigned  char)*imgInfo.infoHeader.biSizeImage);
+    memset(temp_img, 255, sizeof(unsigned char) * imgInfo.infoHeader.biSizeImage);
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.infoHeader.biWidth; j++) {
-            if (imgInfo.img[i*imgInfo.actual_width+j] == 255) continue;
+            if (imgInfo.img[i * imgInfo.actual_width + j] == 255) continue;
             bool isInside = true;
             for (int m = -1; m <= 1; m++) {
-               for (int n = -1; n <= 1; n++) {
-                   int ni = i + m, nj = j + n;
-                   if ((ni == i && nj == j) || ni < 0 || ni >= imgInfo.infoHeader.biHeight || nj < 0 || nj >= imgInfo.infoHeader.biWidth) continue;
-                   if (imgInfo.img[ni*imgInfo.actual_width+nj]==255)
-                       isInside = false;
-               }
-           }
-            if (!isInside) temp_img[i*imgInfo.actual_width+j] =0;
+                for (int n = -1; n <= 1; n++) {
+                    int ni = i + m, nj = j + n;
+                    if ((ni == i && nj == j) || ni < 0 || ni >= imgInfo.infoHeader.biHeight || nj < 0 ||
+                        nj >= imgInfo.infoHeader.biWidth)
+                        continue;
+                    if (imgInfo.img[ni * imgInfo.actual_width + nj] == 255)
+                        isInside = false;
+                }
+            }
+            if (!isInside) temp_img[i * imgInfo.actual_width + j] = 0;
         }
     }
-    write(imgInfo.fileHeader,imgInfo.infoHeader,imgInfo.pRGB,temp_img,R"(..\resources\9.2\ContourTrack.bmp)",imgInfo.infoHeader.biSizeImage);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img, R"(..\resources\9.2\ContourTrack.bmp)",
+          imgInfo.infoHeader.biSizeImage);
 }
 
 
