@@ -794,7 +794,7 @@ void Binary(const unsigned char *img, unsigned char *temp_img,
         temp_img[i] = img[i] >= threshold ? 255 : 0;
 }
 
-//给定阈值分割
+//固定阈值分割
 void FixedThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -955,7 +955,7 @@ void RegionGrowth(char *filename, int T, int cut) {
     int height = imgInfo.infoHeader.biHeight;
 
     std::stack<seed> seeds;
-    //create seeds
+    //create seeds 255
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (imgInfo.img[i * imgInfo.actual_width + j] >= cut) {
@@ -1000,7 +1000,7 @@ typedef struct QuadTree {
     int height;
     int pointX;
     int pointY;
-    struct QuadTree *UL, *UR, *LL, *LR;
+    struct QuadTree *UL, *UR, *LL, *LR, *parent;
 } Node;
 
 bool judge(IMGINFO imgInfo, Node *n, int alpha) {
@@ -1009,14 +1009,14 @@ bool judge(IMGINFO imgInfo, Node *n, int alpha) {
     int sum_grayscale = 0, average_grayscale;
     double variance = 0;
     for (int i = n->pointY; i < n->pointY + n->height; i++) {
-        for (int j = n->pointX; i < n->pointX + n->width; j++) {
+        for (int j = n->pointX; j < n->pointX + n->width; j++) {
             sum_grayscale += imgInfo.img[i * imgInfo.actual_width + j];
         }
     }
     int sum_count = n->width * n->height;
     average_grayscale = sum_grayscale / sum_count;
     for (int i = n->pointY; i < n->pointY + n->height; i++) {
-        for (int j = n->pointX; i < n->pointX + n->width; j++) {
+        for (int j = n->pointX; j < n->pointX + n->width; j++) {
             variance += pow(imgInfo.img[i * imgInfo.actual_width + j] - average_grayscale, 2);
         }
     }
@@ -1028,48 +1028,51 @@ bool judge(IMGINFO imgInfo, Node *n, int alpha) {
 
 //分裂合并
 void Merge(char *filename, int alpha) {
-    auto imgInfo = openImg(filename);
-    Node *origin = nullptr;
+    IMGINFO imgInfo = openImg(filename);
+    Node *origin = new Node;
     origin->width = imgInfo.infoHeader.biWidth;
     origin->height = imgInfo.infoHeader.biHeight;
     origin->pointX = 0;
     origin->pointY = 0;
+    origin->parent = nullptr;
     std::stack<Node *> nodes;
     nodes.push(origin);
-    int k = 0;
     while (!nodes.empty()) {
         origin = nodes.top();
         nodes.pop();
         if (judge(imgInfo, origin, alpha)) {
-            Node *ul = nullptr;
+            Node *ul = new Node;
             ul->pointX = origin->pointX;
             ul->pointY = origin->pointY + origin->height / 2;
             ul->width = origin->width / 2;
             ul->height = origin->height / 2;
+            ul->parent = origin;
             nodes.push(ul);
-            Node *ur = nullptr;
+            Node *ur = new Node;
             ur->pointX = origin->pointX + origin->width / 2;
             ur->pointY = origin->pointY + origin->height / 2;
             ur->width = origin->width / 2;
             ur->height = origin->height / 2;
+            ur->parent = origin;
             nodes.push(ur);
-            Node *ll = nullptr;
+            Node *ll = new Node;
             ll->pointX = origin->pointX;
             ll->pointY = origin->pointY;
             ll->width = origin->width / 2;
             ll->height = origin->height / 2;
+            ll->parent = origin;
             nodes.push(ll);
-            Node *lr = nullptr;
+            Node *lr = new Node;
             lr->pointX = origin->pointX + origin->width / 2;
             lr->pointY = origin->pointY;
             lr->width = origin->width / 2;
             lr->height = origin->height / 2;
+            lr->parent = origin;
             nodes.push(lr);
             origin->UL = ul;
             origin->UR = ur;
             origin->LL = ll;
             origin->LR = lr;
-            k++;
         }
     }
 }
@@ -1306,22 +1309,6 @@ void Hough(char *filename, int alpha) {
             }
         }
     }
-    //确定端点
-    for (int i = 0; i < luo; i++) {
-        for (int j = 0; j < 180; j++) {
-            if (startX[i][j] > endX[i][j]) {
-                int tempX = startX[i][j];
-                startX[i][j] = endX[i][j];
-                endX[i][j] = tempX;
-            }
-            if (startY[i][j] > endY[i][j]) {
-                int tempY = startY[i][j];
-                startY[i][j] = endY[i][j];
-                endY[i][j] = tempY;
-            }
-        }
-    }
-
 //绘制
     auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     //清空
@@ -1330,17 +1317,16 @@ void Hough(char *filename, int alpha) {
             show_img[y * imgInfo.actual_width + x] = 255;
         }
     }
-    for (int i = 0; i < luo; i++) {
-        for (int j = 0; j < 180; j+=5) {
+
+    for (int i = 0; i < luo; i++ ){
+        for (int j = 0; j < 180; j++) {
             if (count[i][j] > alpha) {
                 for (int x = 0; x < imgInfo.infoHeader.biWidth; x++) {
                     if (endX[i][j] >= x && startX[i][j] <= x) {
-                        double angle = j * PI / 180;
-                        if (angle != 0) {
-                            double rect_y = ((i - x * cos(angle)) / sin(angle) + 0.5) / 2 * 2;
-                            show_img[(int) rect_y * imgInfo.actual_width + x] = 0;
-                        }
-                        if (j == 0) {
+                        if (endX[i][j] - startX[i][j]!=0) {
+                            double ray = (double)(endY[i][j] - startY[i][j]) / (double)(endX[i][j] - startX[i][j]);
+                            show_img[(int)((ray * (x-startX[i][j]))+startY[i][j])* imgInfo.actual_width + x] = 0;
+                        } else {
                             for (int climb = startY[i][j]; climb < endY[i][j]; climb++) {
                                 show_img[climb * imgInfo.actual_width + i] = 0;
                             }
@@ -1350,7 +1336,6 @@ void Hough(char *filename, int alpha) {
             }
         }
     }
-
     write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, show_img,
           R"(..\resources\8.1\hough.bmp)",
           imgInfo.infoHeader.biSizeImage);
@@ -1396,14 +1381,11 @@ void RegionMark(char *filename) {
                 }
                 if (tag < 255) {
                     tag += 30;
-                    std::cout << tag << "\n";
                 }
-
             }
         }
     }
-    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img, R"(..\resources\9.1\RegionMark.bmp)",
-          imgInfo.infoHeader.biSizeImage);
+    write(imgInfo.fileHeader, imgInfo.infoHeader, imgInfo.pRGB, temp_img, R"(..\resources\9.1\RegionMark.bmp)",imgInfo.infoHeader.biSizeImage);
     delete[](temp_img);
 }
 

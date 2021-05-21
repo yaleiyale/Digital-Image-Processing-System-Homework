@@ -209,7 +209,7 @@ int main() {
                 sprintf_s(filename, R"(..\resources\5.3\test%d%d.bmp)", 1,4);
                 otsu(filename);//大津法
                 sprintf_s(filename, R"(..\resources\6.1\test%d%d.bmp)", 1,5);
-                alpha = 5,cut = 120;
+                alpha = 1,cut = 120;
                 RegionGrowth(filename,alpha,cut);//区域生长
                 sprintf_s(filename, R"(..\resources\6.2\test%d%d.bmp)", 1,6);
                 Merge(filename,alpha);//分裂合并
