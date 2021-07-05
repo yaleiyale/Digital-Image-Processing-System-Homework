@@ -2,16 +2,16 @@
 
 #include "handle.h"
 
-#define  PI  acos(-1.0)
 
 void menu() {
-    std::cout << "Êı×ÖÍ¼Ïñ´¦Àí" << "\n" << "ÊäÈëÊı×ÖÑ¡Ôñ¹¦ÄÜ" << "\n" << "1:24Î»·ÖÉ«" << "\n" << "2:8Î»»Ò¶È»¯" << "\n" << "3:8Î»·´É«"
-              << "\n" << "4:»æÖÆÖ±·½Í¼" << "\n" << "5:Ö±·½Í¼¾ùºâ»¯" << "\n" << "6:Æ½¾ùÂË²¨" << "\n" << "7:ÖĞÖµÂË²¨" << "\n" << "8:Ëõ·Å"
+    std::cout << "æ•°å­—å›¾åƒå¤„ç†" << "\n" << "è¾“å…¥æ•°å­—é€‰æ‹©åŠŸèƒ½" << "\n" << "1:24ä½åˆ†è‰²" << "\n" << "2:8ä½ç°åº¦åŒ–" << "\n" << "3:8ä½åè‰²"
+              << "\n" << "4:ç»˜åˆ¶ç›´æ–¹å›¾" << "\n" << "5:ç›´æ–¹å›¾å‡è¡¡åŒ–" << "\n" << "6:å¹³å‡æ»¤æ³¢" << "\n" << "7:ä¸­å€¼æ»¤æ³¢" << "\n" << "8:ç¼©æ”¾"
               << "\n"
-              << "9:Æ½ÒÆ" << "\n" << "10:¾µÏñ" << "\n" << "11:Ğı×ª" << "\n" << "12:¹Ì¶¨ãĞÖµ·Ö¸î" << "\n" << "13:µü´úãĞÖµ·Ö¸î" << "\n"
-              << "14:´ó½ò·¨" << "\n" << "15:ÇøÓòÉú³¤" << "\n" << "16:·ÖÁÑºÏ²¢" << "\n" << "17:Prewitt" << "\n" << "18:Sobel"
+              << "9:å¹³ç§»" << "\n" << "10:é•œåƒ" << "\n" << "11:æ—‹è½¬" << "\n" << "12:å›ºå®šé˜ˆå€¼åˆ†å‰²" << "\n" << "13:è¿­ä»£é˜ˆå€¼åˆ†å‰²" << "\n"
+              << "14:å¤§æ´¥æ³•" << "\n" << "15:åŒºåŸŸç”Ÿé•¿" << "\n" << "16:åˆ†è£‚åˆå¹¶" << "\n" << "17:Prewitt" << "\n" << "18:Sobel"
               << "\n" << "19:LOG" << "\n"
-              << "20:Ö±Ïß¼ì²â" << "\n" << "21:Á¬Í¨Óò·ÖÎö" << "\n" << "22:ÂÖÀªÌáÈ¡" << "\n"<<"23:Åú´¦Àí"<<"\n";
+              << "20:ç›´çº¿æ£€æµ‹" << "\n" << "21:è¿é€šåŸŸåˆ†æ" << "\n" << "22:è½®å»“æå–" << "\n"<<"23:æ‰¹å¤„ç†"<<"\n";
+              printf("helloä½ å¥½");
 }
 
 int main() {
@@ -27,134 +27,134 @@ int main() {
         menu();
         std::cin >> choice;
         switch (choice) {
-            case 1://·ÖÉ«
+            case 1://åˆ†è‰²
                 sprintf_s(filename, R"(..\resources\1.1\test%d%d.bmp)", choice / 10, choice % 10);
                 ColorSeparation(filename);
                 system("explorer ..\\resources\\1.1");
                 break;
-            case 2://»Ò¶È»¯
+            case 2://ç°åº¦åŒ–
                 sprintf_s(filename, R"(..\resources\1.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Grayscale(filename);
                 system("explorer ..\\resources\\1.2");
                 break;
-            case 3://·´É«
+            case 3://åè‰²
                 sprintf_s(filename, R"(..\resources\1.3\test%d%d.bmp)", choice / 10, choice % 10);
                 Invert(filename);
                 system("explorer ..\\resources\\1.3");
                 break;
-            case 4://Ö±·½Í¼
+            case 4://ç›´æ–¹å›¾
                 sprintf_s(filename, R"(..\resources\2.1\test%d%d.bmp)", choice / 10, choice % 10);
                 Histogram(filename);
                 system("explorer ..\\resources\\2.1");
                 break;
-            case 5://¾ùºâ»¯
+            case 5://å‡è¡¡åŒ–
                 sprintf_s(filename, R"(..\resources\2.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Equalization(filename);
                 system("explorer ..\\resources\\2.2");
                 break;
-            case 6://Æ½¾ù½µÔë
-                std::cout << "ÊäÈë´°¿Ú´óĞ¡£¨ÆæÊı£©" << "\n";
+            case 6://å¹³å‡é™å™ª
+                std::cout << "è¾“å…¥çª—å£å¤§å°ï¼ˆå¥‡æ•°ï¼‰" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\3.1\test%d%d.bmp)", choice / 10, choice % 10);
                 AverageTreatment(filename, alpha);
                 system("explorer ..\\resources\\3.1");
                 break;
-            case 7://ÖĞÖµ½µÔë
-                std::cout << "ÊäÈë´°¿Ú´óĞ¡£¨ÆæÊı£©" << "\n";
+            case 7://ä¸­å€¼é™å™ª
+                std::cout << "è¾“å…¥çª—å£å¤§å°ï¼ˆå¥‡æ•°ï¼‰" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\3.2\test%d%d.bmp)", choice / 10, choice % 10);
                 MedianFiltering(filename, alpha);
                 system("explorer ..\\resources\\3.2");
                 break;
-            case 8://Ëõ·Å
-                std::cout << "ÊäÈëºáÏòËõ·Å±È" << "\n";
+            case 8://ç¼©æ”¾
+                std::cout << "è¾“å…¥æ¨ªå‘ç¼©æ”¾æ¯”" << "\n";
                 std::cin >> scaleX;
-                std::cout << "ÊäÈë×İÏòËõ·Å±È" << "\n";
+                std::cout << "è¾“å…¥çºµå‘ç¼©æ”¾æ¯”" << "\n";
                 std::cin >> scaleY;
                 sprintf_s(filename, R"(..\resources\4.1\test%d%d.bmp)", choice / 10, choice % 10);
                 Scale(filename, scaleX, scaleY);
                 system("explorer ..\\resources\\4.1");
                 break;
-            case 9://Æ½ÒÆ
-                std::cout << "ÊäÈëË®Æ½Æ«ÒÆÁ¿" << "\n";
+            case 9://å¹³ç§»
+                std::cout << "è¾“å…¥æ°´å¹³åç§»é‡" << "\n";
                 std::cin >> deltaX;
-                std::cout << "ÊäÈë´¹Ö±Æ«ÒÆÁ¿" << "\n";
+                std::cout << "è¾“å…¥å‚ç›´åç§»é‡" << "\n";
                 std::cin >> deltaY;
                 sprintf_s(filename, R"(..\resources\4.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Translation(filename, deltaX, deltaY);
                 system("explorer ..\\resources\\4.2");
                 break;
-            case 10://¾µÏñ
+            case 10://é•œåƒ
                 sprintf_s(filename, R"(..\resources\4.3\test%d%d.bmp)", choice / 10, choice % 10);
                 Horizontal_Mirror(filename);
                 Vertical_Mirror(filename);
                 system("explorer ..\\resources\\4.3");
                 break;
-            case 11://Ğı×ª
-                std::cout << "ÊäÈëĞı×ª½Ç¶È" << "\n";
+            case 11://æ—‹è½¬
+                std::cout << "è¾“å…¥æ—‹è½¬è§’åº¦" << "\n";
                 std::cin >> angle;
                 sprintf_s(filename, R"(..\resources\4.4\test%d%d.bmp)", choice / 10, choice % 10);
                 Rotate(filename, angle * PI / 180);
                 system("explorer ..\\resources\\4.4");
                 break;
-            case 12://¸ø¶¨ãĞÖµ·Ö¸î
-                std::cout << "ÊäÈë¸ø¶¨ãĞÖµ" << "\n";
+            case 12://ç»™å®šé˜ˆå€¼åˆ†å‰²
+                std::cout << "è¾“å…¥ç»™å®šé˜ˆå€¼" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\5.1\test%d%d.bmp)", choice / 10, choice % 10);
                 FixedThresholdSegmentation(filename, alpha);
                 system("explorer ..\\resources\\5.1");
                 break;
-            case 13://µü´úãĞÖµ·¨
-                std::cout << "ÊäÈëµü´úÃÅÏŞÖµ" << "\n";
+            case 13://è¿­ä»£é˜ˆå€¼æ³•
+                std::cout << "è¾“å…¥è¿­ä»£é—¨é™å€¼" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\5.2\test%d%d.bmp)", choice / 10, choice % 10);
                 IterationThresholdSegmentation(filename, alpha);
                 system("explorer ..\\resources\\5.2");
                 break;
-            case 14://´ó½ò·¨
+            case 14://å¤§æ´¥æ³•
                 sprintf_s(filename, R"(..\resources\5.3\test%d%d.bmp)", choice / 10, choice % 10);
                 otsu(filename);
                 system("explorer ..\\resources\\5.3");
                 break;
             case 15:
-                std::cout << "ÊäÈëÉú³¤×¼ÔòãĞÖµT" << "\n";
+                std::cout << "è¾“å…¥ç”Ÿé•¿å‡†åˆ™é˜ˆå€¼T" << "\n";
                 std::cin >> alpha;
-                std::cout << "ÊäÈë·Ö½çÖµÒÔ²úÉúÖÖ×Ó" << "\n";
+                std::cout << "è¾“å…¥åˆ†ç•Œå€¼ä»¥äº§ç”Ÿç§å­" << "\n";
                 std::cin >> cut;
                 sprintf_s(filename, R"(..\resources\6.1\test%d%d.bmp)", choice / 10, choice % 10);
                 RegionGrowth(filename,alpha,cut);
                 system("explorer ..\\resources\\6.1");
                 break;
             case 16:
-                std::cout << "ÊäÈëÉú³¤×¼ÔòãĞÖµT" << "\n";
+                std::cout << "è¾“å…¥ç”Ÿé•¿å‡†åˆ™é˜ˆå€¼T" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\6.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Merge(filename,alpha);
                 system("explorer ..\\resources\\6.2");
                 break;
             case 17:
-                std::cout << "ÊäÈëãĞÖµ" << "\n";
+                std::cout << "è¾“å…¥é˜ˆå€¼" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\7.1\test%d%d.bmp)", choice / 10, choice % 10);
                 Prewitt(filename, alpha);
                 system("explorer ..\\resources\\7.1");
                 break;
             case 18:
-                std::cout << "ÊäÈëãĞÖµ" << "\n";
+                std::cout << "è¾“å…¥é˜ˆå€¼" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\7.2\test%d%d.bmp)", choice / 10, choice % 10);
                 Sobel(filename, alpha);
                 system("explorer ..\\resources\\7.2");
                 break;
             case 19:
-                std::cout << "ÊäÈëãĞÖµ" << "\n";
+                std::cout << "è¾“å…¥é˜ˆå€¼" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\7.3\test%d%d.bmp)", choice / 10, choice % 10);
                 Log(filename, alpha);
                 system("explorer ..\\resources\\7.3");
                 break;
             case 20:
-                std::cout << "ÊäÈëãĞÖµ" << "\n";
+                std::cout << "è¾“å…¥é˜ˆå€¼" << "\n";
                 std::cin >> alpha;
                 sprintf_s(filename, R"(..\resources\8.1\test%d%d.bmp)", choice / 10, choice % 10);
                 Hough(filename, alpha);
@@ -172,47 +172,47 @@ int main() {
                 break;
             case 23:
                 sprintf_s(filename, R"(..\resources\1.1\test%d%d.bmp)", 0, 1);
-                ColorSeparation(filename);//·ÖÉ«
+                ColorSeparation(filename);//åˆ†è‰²
                 sprintf_s(filename, R"(..\resources\1.2\test%d%d.bmp)",0,2);
-                Grayscale(filename);//»Ò¶È»¯
+                Grayscale(filename);//ç°åº¦åŒ–
                 sprintf_s(filename, R"(..\resources\1.3\test%d%d.bmp)", 0,3);
-                Invert(filename);//·´É«
+                Invert(filename);//åè‰²
                 sprintf_s(filename, R"(..\resources\2.1\test%d%d.bmp)", 0,4);
-                Histogram(filename);//Ö±·½Í¼
+                Histogram(filename);//ç›´æ–¹å›¾
                 sprintf_s(filename, R"(..\resources\2.2\test%d%d.bmp)", 0,5);
-                Equalization(filename);//Ö±·½Í¼¾ùºâ»¯
+                Equalization(filename);//ç›´æ–¹å›¾å‡è¡¡åŒ–
                 sprintf_s(filename, R"(..\resources\3.1\test%d%d.bmp)", 0,6);
                 alpha = 5;
-                AverageTreatment(filename, alpha);//Æ½¾ù´¦Àí
+                AverageTreatment(filename, alpha);//å¹³å‡å¤„ç†
                 sprintf_s(filename, R"(..\resources\3.2\test%d%d.bmp)", 0,7);
                 alpha = 5;
-                MedianFiltering(filename, alpha);//ÖĞÖµÂË²¨
+                MedianFiltering(filename, alpha);//ä¸­å€¼æ»¤æ³¢
                 sprintf_s(filename, R"(..\resources\4.1\test%d%d.bmp)", 0,8);
                 scaleX = 0.5,scaleY=2;
-                Scale(filename, scaleX, scaleY);//Ëõ·Å
+                Scale(filename, scaleX, scaleY);//ç¼©æ”¾
                 sprintf_s(filename, R"(..\resources\4.2\test%d%d.bmp)", 0,9);
                 deltaX = 20,deltaY = -30;
-                Translation(filename, deltaX, deltaY);//Æ½ÒÆ
+                Translation(filename, deltaX, deltaY);//å¹³ç§»
                 sprintf_s(filename, R"(..\resources\4.3\test%d%d.bmp)", 1,0);
-                Horizontal_Mirror(filename);//ÊúÖ±¾µÏñ
+                Horizontal_Mirror(filename);//ç«–ç›´é•œåƒ
                 sprintf_s(filename, R"(..\resources\4.3\test%d%d.bmp)", 1,0);
-                Vertical_Mirror(filename);//Ë®Æ½¾µÏñ
+                Vertical_Mirror(filename);//æ°´å¹³é•œåƒ
                 sprintf_s(filename, R"(..\resources\4.4\test%d%d.bmp)", 1,1);
                 angle = 30;
-                Rotate(filename, angle * PI / 180);//Ğı×ª
+                Rotate(filename, angle * PI / 180);//æ—‹è½¬
                 sprintf_s(filename, R"(..\resources\5.1\test%d%d.bmp)", 1,2);
                 alpha = 100;
-                FixedThresholdSegmentation(filename, alpha);//¹Ì¶¨ãĞÖµ·Ö¸î
+                FixedThresholdSegmentation(filename, alpha);//å›ºå®šé˜ˆå€¼åˆ†å‰²
                 sprintf_s(filename, R"(..\resources\5.2\test%d%d.bmp)", 1,3);
                 alpha = 2;
-                IterationThresholdSegmentation(filename, alpha);//µü´úãĞÖµ·Ö¸î
+                IterationThresholdSegmentation(filename, alpha);//è¿­ä»£é˜ˆå€¼åˆ†å‰²
                 sprintf_s(filename, R"(..\resources\5.3\test%d%d.bmp)", 1,4);
-                otsu(filename);//´ó½ò·¨
+                otsu(filename);//å¤§æ´¥æ³•
                 sprintf_s(filename, R"(..\resources\6.1\test%d%d.bmp)", 1,5);
                 alpha = 1,cut = 120;
-                RegionGrowth(filename,alpha,cut);//ÇøÓòÉú³¤
+                RegionGrowth(filename,alpha,cut);//åŒºåŸŸç”Ÿé•¿
                 sprintf_s(filename, R"(..\resources\6.2\test%d%d.bmp)", 1,6);
-                Merge(filename,alpha);//·ÖÁÑºÏ²¢
+                Merge(filename,alpha);//åˆ†è£‚åˆå¹¶
                 sprintf_s(filename, R"(..\resources\7.1\test%d%d.bmp)", 1,7);
                 alpha = 120;
                 Prewitt(filename, alpha);
@@ -224,9 +224,9 @@ int main() {
                 Log(filename, alpha);
                 sprintf_s(filename, R"(..\resources\8.1\test%d%d.bmp)", 2,0);
                 alpha = 80;
-                Hough(filename, alpha);//Ö±Ïß¼ì²â
+                Hough(filename, alpha);//ç›´çº¿æ£€æµ‹
                 sprintf_s(filename, R"(..\resources\9.1\test%d%d.bmp)", 2,1);
-                RegionMark(filename);//ÇøÓò±ê¼Ç
+                RegionMark(filename);//åŒºåŸŸæ ‡è®°
                 sprintf_s(filename, R"(..\resources\9.2\test%d%d.bmp)", 2,2);
                 ContourTrack(filename);
                 system("explorer ..\\resources");

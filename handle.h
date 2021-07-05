@@ -10,6 +10,8 @@ typedef struct {
 #include <stack>
 #include "openimg.h"
 #include "writeimg.h"
+#include <math.h>
+#include <string.h>
 
 int getMax(const int *arr, int count) {
 
@@ -27,15 +29,15 @@ void quickSort(int a[], int l, int r) {
         return;
     int i = l;
     int j = r;
-    int key = a[l]; //Ñ¡ÔñµÚÒ»¸öÊıÎªkey
+    int key = a[l]; //é€‰æ‹©ç¬¬ä¸€ä¸ªæ•°ä¸ºkey
     while (i < j) {
-        while (i < j && a[j] >= key) //´ÓÓÒÏò×óÕÒµÚÒ»¸öĞ¡ÓÚkeyµÄÖµ
+        while (i < j && a[j] >= key) //ä»å³å‘å·¦æ‰¾ç¬¬ä¸€ä¸ªå°äºkeyçš„å€¼
             j--;
         if (i < j) {
             a[i] = a[j];
             i++;
         }
-        while (i < j && a[i] < key) //´Ó×óÏòÓÒÕÒµÚÒ»¸ö´óÓÚkeyµÄÖµ
+        while (i < j && a[i] < key) //ä»å·¦å‘å³æ‰¾ç¬¬ä¸€ä¸ªå¤§äºkeyçš„å€¼
             i++;
         if (i < j) {
             a[j] = a[i];
@@ -43,11 +45,11 @@ void quickSort(int a[], int l, int r) {
         }
     }
     a[i] = key;
-    quickSort(a, l, i - 1); //¼ÌĞøÅÅ×ó²¿·Ö£¬µİ¹éµ÷ÓÃ
-    quickSort(a, i + 1, r); //¼ÌĞøÅÅÓÒ²¿·Ö£¬µİ¹éµ÷ÓÃ
+    quickSort(a, l, i - 1); //ç»§ç»­æ’å·¦éƒ¨åˆ†ï¼Œé€’å½’è°ƒç”¨
+    quickSort(a, i + 1, r); //ç»§ç»­æ’å³éƒ¨åˆ†ï¼Œé€’å½’è°ƒç”¨
 }
 
-//ÆæÊı¸öÊı¾İÇóÖĞ¼äÖµ
+//å¥‡æ•°ä¸ªæ•°æ®æ±‚ä¸­é—´å€¼
 int getMiddle(const int *arr, int count) {
     int *copy = (int *) malloc(sizeof(int) * count);
     for (int i = 0; i < count; i++) {
@@ -57,33 +59,33 @@ int getMiddle(const int *arr, int count) {
     return copy[count / 2 + 1];
 }
 
-// 24Î»·ÖÉ«
+// 24ä½åˆ†è‰²
 void ColorSeparation(char *filename) {
     IMGINFO imgInfo = openImg(filename);
-    //·ÖÉ«Í¼ÏñÇø
+    //åˆ†è‰²å›¾åƒåŒº
     auto *img_r = new unsigned char[imgInfo.infoHeader.biSizeImage];
     auto *img_g = new unsigned char[imgInfo.infoHeader.biSizeImage];
     auto *img_b = new unsigned char[imgInfo.infoHeader.biSizeImage];
-    //·ÖÀë
+    //åˆ†ç¦»
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
-            //°´BGRÈ¡´æµ½ÄÚ´æÖĞ
+            //æŒ‰BGRå–å­˜åˆ°å†…å­˜ä¸­
             switch (j % 3) {
-                // BÇø
+                // BåŒº
                 case 0:
                     img_r[i * imgInfo.actual_width + j] = 0;
                     img_g[i * imgInfo.actual_width + j] = 0;
                     img_b[i * imgInfo.actual_width + j] =
                             imgInfo.img[i * imgInfo.actual_width + j];
                     break;
-                    // GÇø
+                    // GåŒº
                 case 1:
                     img_r[i * imgInfo.actual_width + j] = 0;
                     img_g[i * imgInfo.actual_width + j] =
                             imgInfo.img[i * imgInfo.actual_width + j];
                     img_b[i * imgInfo.actual_width + j] = 0;
                     break;
-                    // RÇø
+                    // RåŒº
                 case 2:
                     img_r[i * imgInfo.actual_width + j] =
                             imgInfo.img[i * imgInfo.actual_width + j];
@@ -104,7 +106,7 @@ void ColorSeparation(char *filename) {
     delete[](img_b);
 }
 
-// 24Î»»Ò¶È»¯
+// 24ä½ç°åº¦åŒ–
 void Grayscale(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     int new_width = (imgInfo.infoHeader.biWidth + 3) / 4 * 4;
@@ -123,7 +125,7 @@ void Grayscale(char *filename) {
         }
     }
     RGBQUAD pRGB[256];
-    //Ğ´Èëµ÷É«°åÊı¾İ
+    //å†™å…¥è°ƒè‰²æ¿æ•°æ®
     for (int i = 0; i < 256; i++) {
         pRGB[i].rgbBlue = pRGB[i].rgbGreen = pRGB[i].rgbRed = i;
         pRGB[i].rgbReserved = 0;
@@ -137,7 +139,7 @@ void Grayscale(char *filename) {
     delete[](img_grey);
 }
 
-// 8Î»·´É«
+// 8ä½åè‰²
 void Invert(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     auto *invert_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -152,7 +154,7 @@ void Invert(char *filename) {
     delete[](invert_img);
 }
 
-//Ö±·½Í¼
+//ç›´æ–¹å›¾
 void Histogram(char *filename) {
     int count[256] = {0};
     IMGINFO imgInfo = openImg(filename);
@@ -173,7 +175,7 @@ void Histogram(char *filename) {
         }
         k++;
     }
-    //Ö±·½Í¼ÎÄ¼şÍ·¡¢ĞÅÏ¢Í·
+    //ç›´æ–¹å›¾æ–‡ä»¶å¤´ã€ä¿¡æ¯å¤´
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
     fh.bfType = 19778;
@@ -193,7 +195,7 @@ void Histogram(char *filename) {
     ih.biClrUsed = clrUsed;
     ih.biClrImportant = 0;
     auto *show_img = new unsigned char[ih.biSizeImage];
-    //»æÖÆÖ±·½Í¼
+    //ç»˜åˆ¶ç›´æ–¹å›¾
     for (int j = 0; j < ih.biWidth * 3; j += 3) {
         int i = 0;
         while (count[j / 3] > 0) {
@@ -214,31 +216,31 @@ void Histogram(char *filename) {
     delete[](show_img);
 }
 
-//Ö±·½Í¼¾ùºâ»¯
+//ç›´æ–¹å›¾å‡è¡¡åŒ–
 void Equalization(char *filename) {
     char origin[50] = R"(..\resources\2.2\origin.bmp)";
     IMGINFO origin_img = openImg(origin);
     IMGINFO imgInfo = openImg(filename);
-    //µ±Ç°Ö±·½Í¼½âÎö
+    //å½“å‰ç›´æ–¹å›¾è§£æ
     int count[256] = {0};
     for (int i = 0; i < imgInfo.infoHeader.biWidth * 3; i += 3) {
         for (int j = 0; j < imgInfo.infoHeader.biHeight; j++) {
             if ((imgInfo.img[j * imgInfo.infoHeader.biWidth * 3 + i] == 0) &
                 (imgInfo.img[j * imgInfo.infoHeader.biWidth * 3 + i + 1] == 0) &&
                 (imgInfo.img[j * imgInfo.infoHeader.biWidth * 3 + i + 2] == 0)) {
-                count[i / 3]++; //Ã¿¸ö»Ò¶ÈµÄÍ³¼ÆÁ¿
+                count[i / 3]++; //æ¯ä¸ªç°åº¦çš„ç»Ÿè®¡é‡
             }
         }
     }
-    double p[256] = {0}; //Ã¿¸ö»Ò¶ÈµÄ¸ÅÂÊ
+    double p[256] = {0}; //æ¯ä¸ªç°åº¦çš„æ¦‚ç‡
     double sum = 0.0;
     for (int k : count) {
-        sum += k; //Ö±·½Í¼·´Ó¦µÄÏñËØ×ÜÁ¿
+        sum += k; //ç›´æ–¹å›¾ååº”çš„åƒç´ æ€»é‡
     }
     for (int k = 0; k < 256; k++) {
         p[k] = ((double) count[k]) / ((double) sum);
     }
-    double pi[256] = {0}; //ÀÛ¼Ó¸ÅÂÊ
+    double pi[256] = {0}; //ç´¯åŠ æ¦‚ç‡
     pi[0] = p[0];
     for (int k = 1; k < 256; k++) {
         pi[k] = pi[k - 1] + p[k];
@@ -253,7 +255,7 @@ void Equalization(char *filename) {
         origin_img.img[k] = temp[colour];
     }
 
-    int new_count[256] = {0}; //ĞÂÖ±·½Í¼¼ÆÊı
+    int new_count[256] = {0}; //æ–°ç›´æ–¹å›¾è®¡æ•°
     for (int k = 0; k < 256; k++) {
         new_count[temp[k]] += (int) (sum * p[k]);
     }
@@ -294,7 +296,7 @@ void Equalization(char *filename) {
     int y = ih.biHeight;
     int actual_size = x * y;
     auto *show_img = new unsigned char[actual_size];
-    //»æÖÆÖ±·½Í¼
+    //ç»˜åˆ¶ç›´æ–¹å›¾
     for (int j = 0; j < x; j += 3) {
         int i = 0;
         while (new_count[j / 3] > 0) {
@@ -315,17 +317,17 @@ void Equalization(char *filename) {
     delete[](show_img);
 }
 
-//Æ½¾ù´¦Àí
+//å¹³å‡å¤„ç†
 void AverageTreatment(char *filename, int windows_size) {
     int depth = windows_size / 2;
     IMGINFO imgInfo = openImg(filename);
     auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int step = imgInfo.infoHeader.biBitCount / 8;
-    //ºöÂÔÊ½
+    //å¿½ç•¥å¼
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
 
-            //±ß½ç´¦Àí
+            //è¾¹ç•Œå¤„ç†
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth ||
                 j <= depth - 1 ||
                 j >= (imgInfo.infoHeader.biWidth - 1) *
@@ -333,7 +335,7 @@ void AverageTreatment(char *filename, int windows_size) {
                 show_img[i * imgInfo.actual_width + j] =
                         imgInfo.img[i * imgInfo.actual_width + j];
             }
-                //ÖĞ¼äÇøÓò
+                //ä¸­é—´åŒºåŸŸ
             else {
                 int temp = 0;
                 for (int width_pointer = -depth; width_pointer <= depth;
@@ -358,7 +360,7 @@ void AverageTreatment(char *filename, int windows_size) {
               R"(..\resources\3.1\AverageTreatment1.bmp)",
               imgInfo.infoHeader.biSizeImage);
     }
-    //À©³äÊ½
+    //æ‰©å……å¼
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
             int temp = 0;
@@ -421,14 +423,14 @@ void AverageTreatment(char *filename, int windows_size) {
     delete[](show_img);
 }
 
-//ÖĞÖµÂË²¨
+//ä¸­å€¼æ»¤æ³¢
 void MedianFiltering(char *filename, int windows_size) {
     int depth = windows_size / 2;
     IMGINFO imgInfo = openImg(filename);
     auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int step = imgInfo.infoHeader.biBitCount / 8;
     int *temp = (int *) malloc(sizeof(int) * windows_size * windows_size);
-    //ºöÂÔÊ½
+    //å¿½ç•¥å¼
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth ||
@@ -460,7 +462,7 @@ void MedianFiltering(char *filename, int windows_size) {
               R"(..\resources\3.2\MedianFiltering1.bmp)",
               imgInfo.infoHeader.biSizeImage);
     }
-    //À©³äÊ½
+    //æ‰©å……å¼
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth ||
@@ -525,7 +527,7 @@ void MedianFiltering(char *filename, int windows_size) {
     delete[](show_img);
 }
 
-//Ëõ·Å
+//ç¼©æ”¾
 void Scale(char *filename, float scaleX, float scaleY) {
 
     IMGINFO imgInfo = openImg((filename));
@@ -564,7 +566,7 @@ void Scale(char *filename, float scaleX, float scaleY) {
     delete[](zoom_img);
 }
 
-//Æ½ÒÆ
+//å¹³ç§»
 void Translation(char *filename, int deltaX, int deltaY) {
     IMGINFO imgInfo = openImg(filename);
     auto *translation_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -616,7 +618,7 @@ void Translation(char *filename, int deltaX, int deltaY) {
     delete[](translation_img);
 }
 
-//Ë®Æ½¾µÏñ
+//æ°´å¹³é•œåƒ
 void Horizontal_Mirror(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     auto *mirror_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -662,7 +664,7 @@ void Horizontal_Mirror(char *filename) {
     delete[](mirror_img);
 }
 
-//´¹Ö±¾µÏñ
+//å‚ç›´é•œåƒ
 void Vertical_Mirror(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     auto *mirror_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -685,14 +687,14 @@ void Vertical_Mirror(char *filename) {
     delete[](mirror_img);
 }
 
-//Ğı×ª
+//æ—‹è½¬
 void Rotate(char *filename, double angle) {
     IMGINFO imgInfo = openImg(filename);
     int img_width = ceil(abs(imgInfo.infoHeader.biHeight * sin(angle)) +
-                         abs(imgInfo.actual_width * cos(angle))); //ĞÂÍ¼Ïñ¿í
+                         abs(imgInfo.actual_width * cos(angle))); //æ–°å›¾åƒå®½
     int img_height =
             ceil(abs(imgInfo.actual_width * sin(angle)) +
-                 abs(imgInfo.infoHeader.biHeight * cos(angle))); //ĞÂÍ¼Ïñ¸ß
+                 abs(imgInfo.infoHeader.biHeight * cos(angle))); //æ–°å›¾åƒé«˜
     int new_size = img_width * img_height;
     auto *rotate_img = new unsigned char[new_size];
     for (int i = 0; i < img_height; i++) {
@@ -717,7 +719,7 @@ void Rotate(char *filename, double angle) {
     delete[](rotate_img);
 }
 
-//»æÖÆ´ø±ê¼ÇµÄÖ±·½Í¼
+//ç»˜åˆ¶å¸¦æ ‡è®°çš„ç›´æ–¹å›¾
 void LabeledHistogram(char *filename, const char *target, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     int count[256] = {0};
@@ -737,7 +739,7 @@ void LabeledHistogram(char *filename, const char *target, int alpha) {
         }
         k++;
     }
-    //Ö±·½Í¼ÎÄ¼şÍ·¡¢ĞÅÏ¢Í·
+    //ç›´æ–¹å›¾æ–‡ä»¶å¤´ã€ä¿¡æ¯å¤´
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
     fh.bfType = 19778;
@@ -760,7 +762,7 @@ void LabeledHistogram(char *filename, const char *target, int alpha) {
     int y = ih.biHeight;
     int actual_size = x * y;
     auto *show_img = new unsigned char[actual_size];
-    //»æÖÆÖ±·½Í¼
+    //ç»˜åˆ¶ç›´æ–¹å›¾
     for (int j = 0; j < x; j += 3) {
         int i = 0;
         while (count[j / 3] > 0) {
@@ -787,14 +789,14 @@ void LabeledHistogram(char *filename, const char *target, int alpha) {
     delete[](show_img);
 }
 
-//Í¼Ïñ¶şÖµ»¯
+//å›¾åƒäºŒå€¼åŒ–
 void Binary(const unsigned char *img, unsigned char *temp_img,
             unsigned long size, int threshold) {
     for (int i = 0; i < size; i++)
         temp_img[i] = img[i] >= threshold ? 255 : 0;
 }
 
-//¹Ì¶¨ãĞÖµ·Ö¸î
+//å›ºå®šé˜ˆå€¼åˆ†å‰²
 void FixedThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -812,7 +814,7 @@ void FixedThresholdSegmentation(char *filename, int alpha) {
     LabeledHistogram(filename, R"(..\resources\5.1\Histogram.bmp)", alpha);
 }
 
-//µü´úãĞÖµ·Ö¸î
+//è¿­ä»£é˜ˆå€¼åˆ†å‰²
 void IterationThresholdSegmentation(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     int count[256] = {0};
@@ -826,10 +828,10 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
             copy[i * imgInfo.infoHeader.biWidth + j] =
                     imgInfo.img[i * imgInfo.infoHeader.biWidth + j];
     }
-    //³õÊ¼ãĞÖµ
+    //åˆå§‹é˜ˆå€¼
     int t1 = getMiddle(copy, sum);
     free(copy);
-    //Í³¼Æ»Ò¶È¼ÆÊı
+    //ç»Ÿè®¡ç°åº¦è®¡æ•°
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0;
              j < imgInfo.infoHeader.biWidth * (imgInfo.infoHeader.biBitCount / 8);
@@ -840,7 +842,7 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
     }
     int t2;
     bool bingo = false;
-    //µü´ú¼ÆËããĞÖµ
+    //è¿­ä»£è®¡ç®—é˜ˆå€¼
     while (!bingo) {
         double pre_sum = 0, next_sum = 0, pre_count = 0, next_count = 0;
         for (int i = 0; i < 256; i++) {
@@ -877,7 +879,7 @@ void IterationThresholdSegmentation(char *filename, int alpha) {
     LabeledHistogram(filename, R"(..\resources\5.2\Histogram.bmp)", t2);
 }
 
-// ´ó½ò·¨
+// å¤§æ´¥æ³•
 void otsu(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     const int GrayScale = 256;
@@ -890,7 +892,7 @@ void otsu(char *filename) {
     float sum = (float) imgInfo.infoHeader.biWidth *
                 (float) imgInfo.infoHeader.biHeight *
                 ((float) imgInfo.infoHeader.biBitCount / 8);
-    //Í³¼Æ»Ò¶È¼ÆÊı
+    //ç»Ÿè®¡ç°åº¦è®¡æ•°
     for (i = 0; i < bmpHeight; i++) {
         for (j = 0; j < bmpWidth; j++) {
             int now = imgInfo.img[i * imgInfo.actual_width + j];
@@ -898,7 +900,7 @@ void otsu(char *filename) {
         }
     }
 
-    //¼ÆËãÃ¿¸öÏñËØÔÚÕû·ùÍ¼ÏñÖĞµÄ±ÈÀı
+    //è®¡ç®—æ¯ä¸ªåƒç´ åœ¨æ•´å¹…å›¾åƒä¸­çš„æ¯”ä¾‹
     double max_p = 0.0;
     for (i = 0; i < GrayScale; i++) {
         p[i] = (float) count[i] / sum;
@@ -906,17 +908,17 @@ void otsu(char *filename) {
             max_p = p[i];
         }
     }
-    //±éÀúÑ°ÕÒ×î´óÀà¼ä·½²î
+    //éå†å¯»æ‰¾æœ€å¤§ç±»é—´æ–¹å·®
     double back_p, front_p, back_sum, front_sum, back_aver, front_aver, average,
             g, max_g = 0;
     for (i = 0; i < GrayScale; i++) {
         back_p = front_p = back_sum = front_sum = 0;
         for (j = 0; j < GrayScale; j++) {
-            if (j <= i) //±³¾°²¿·Ö
+            if (j <= i) //èƒŒæ™¯éƒ¨åˆ†
             {
                 back_p += p[j];
                 back_sum += j * p[j];
-            } else //Ç°¾°²¿·Ö
+            } else //å‰æ™¯éƒ¨åˆ†
             {
                 front_p += p[j];
                 front_sum += j * p[j];
@@ -946,7 +948,7 @@ void otsu(char *filename) {
     LabeledHistogram(filename, R"(..\resources\5.3\Histogram.bmp)", threshold);
 }
 
-//ÇøÓòÉú³¤
+//åŒºåŸŸç”Ÿé•¿
 void RegionGrowth(char *filename, int T, int cut) {
     IMGINFO imgInfo = openImg(filename);
     auto *temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
@@ -1026,7 +1028,7 @@ bool judge(IMGINFO imgInfo, Node *n, int alpha) {
     else return true;
 }
 
-//·ÖÁÑºÏ²¢
+//åˆ†è£‚åˆå¹¶
 void Merge(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     Node *origin = new Node;
@@ -1186,11 +1188,11 @@ void Log(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
     int step = imgInfo.infoHeader.biBitCount / 8;
-    //ºöÂÔÊ½
+    //å¿½ç•¥å¼
     for (int i = 0; i < imgInfo.infoHeader.biHeight; i++) {
         for (int j = 0; j < imgInfo.actual_width; j++) {
 
-            //±ß½ç´¦Àí
+            //è¾¹ç•Œå¤„ç†
             if (i <= depth - 1 || i >= imgInfo.infoHeader.biHeight - depth ||
                 j <= depth - 1 ||
                 j >= (imgInfo.infoHeader.biWidth - 1) *
@@ -1198,7 +1200,7 @@ void Log(char *filename, int alpha) {
                 show_img[i * imgInfo.actual_width + j] =
                         imgInfo.img[i * imgInfo.actual_width + j];
             }
-                //ÖĞ¼äÇøÓò
+                //ä¸­é—´åŒºåŸŸ
             else {
                 int temp = 16 * imgInfo.img[i * imgInfo.actual_width + j]
                            - 2 * (imgInfo.img[(i + 1) * imgInfo.actual_width + j] +
@@ -1230,12 +1232,12 @@ void Log(char *filename, int alpha) {
     delete[](show_img);
 }
 
-//Ö±Ïß¼ì²â
+//ç›´çº¿æ£€æµ‹
 void Hough(char *filename, int alpha) {
     IMGINFO imgInfo = openImg(filename);
     int luo = (int) (sqrt(pow(imgInfo.infoHeader.biWidth, 2) +
                           pow(imgInfo.infoHeader.biHeight, 2)) + 1);
-    //Ö±ÏßÊı×é
+    //ç›´çº¿æ•°ç»„
     int **count = (int **) malloc(sizeof(int *) * luo);
     for (int i = 0; i < luo; i++) {
         count[i] = (int *) malloc(sizeof(int) * 180);
@@ -1287,7 +1289,7 @@ void Hough(char *filename, int alpha) {
         }
     }
 
-    //Ö±ÏßÉÏµÄµã¼ÆÊı
+    //ç›´çº¿ä¸Šçš„ç‚¹è®¡æ•°
     for (int i = 0; i < luo; i++) {
         for (int j = 0; j < 180; j++) {
             start_flag = 0;
@@ -1309,9 +1311,9 @@ void Hough(char *filename, int alpha) {
             }
         }
     }
-//»æÖÆ
+//ç»˜åˆ¶
     auto *show_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
-    //Çå¿Õ
+    //æ¸…ç©º
     for (int x = 0; x < imgInfo.actual_width; x++) {
         for (int y = 0; y < imgInfo.infoHeader.biHeight; y++) {
             show_img[y * imgInfo.actual_width + x] = 255;
@@ -1342,7 +1344,7 @@ void Hough(char *filename, int alpha) {
     delete[](show_img);
 }
 
-//ÇøÓò±ê¼Ç
+//åŒºåŸŸæ ‡è®°
 void RegionMark(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     int width = imgInfo.infoHeader.biWidth;
@@ -1389,7 +1391,7 @@ void RegionMark(char *filename) {
     delete[](temp_img);
 }
 
-//ÂÖÀªÌáÈ¡
+//è½®å»“æå–
 void ContourTrack(char *filename) {
     IMGINFO imgInfo = openImg(filename);
     auto temp_img = new unsigned char[imgInfo.infoHeader.biSizeImage];
